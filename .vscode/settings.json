@@ -1,0 +1,37 @@
+{
+    // 42 Norm v4.1 — real tabs, 4-char wide, 80-column limit
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+
+    // Show 80-column boundary (lines must not exceed 80 columns)
+    "editor.rulers": [80],
+    "editor.wordWrap": "off",
+
+    // Trailing whitespace is a Norm error
+    "files.trimTrailingWhitespace": true,
+    "editor.trimAutoWhitespace": true,
+
+    // Ensure files end with a newline
+    "files.insertFinalNewline": true,
+
+    // Make whitespace visible to catch spaces vs tabs mistakes
+    "editor.renderWhitespace": "boundary",
+
+    // C-specific overrides
+    "[c]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false,
+        // Disable format-on-save: clang-format does not produce Norm-compliant output
+        "editor.formatOnSave": false,
+        "editor.formatOnType": false,
+        "editor.formatOnPaste": false
+    },
+
+    // Makefiles must also use real tabs
+    "[makefile]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 4
+    }
+}
