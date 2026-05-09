@@ -6,13 +6,13 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:27 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:05:38 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:12:07 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	launch_threads(t_sim *context)
+static int	launch_threads(t_context *context)
 {
 	int	i;
 
@@ -27,7 +27,7 @@ static int	launch_threads(t_sim *context)
 	return (-1);
 }
 
-static void	join_threads(t_sim *context, int count)
+static void	join_threads(t_context *context, int count)
 {
 	int	i;
 
@@ -41,9 +41,9 @@ static void	join_threads(t_sim *context, int count)
 
 int	main(int argc, char **argv)
 {
-	t_args	args;
-	t_sim	context;
-	int		created;
+	t_args		args;
+	t_context	context;
+	int			created;
 
 	if (!handle_args(argc, argv, &args))
 		return (1);

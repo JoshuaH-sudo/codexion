@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:05:38 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:07:09 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static void	set_lock_order(t_coder *coder, int *first, int *second)
 
 static void	lock_dongles(t_coder *coder, int first, int second)
 {
-	t_sim		*context;
+	t_context	*context;
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 
@@ -45,7 +45,7 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 
 static void	unlock_dongles(t_coder *coder, int first, int second)
 {
-	t_sim		*context;
+	t_context	*context;
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 
@@ -66,7 +66,7 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 void	*coder_routine(void *arg)
 {
 	t_coder		*coder;
-	t_sim		*context;
+	t_context	*context;
 	int			first;
 	int			second;
 
