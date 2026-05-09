@@ -6,8 +6,9 @@ INCLUDES	= -I include
 
 SRCS		= src/main.c \
 			src/args.c \
-			src/sim.c \
-			src/coder.c
+			src/context.c \
+			src/coder.c \
+			src/logger.c \
 
 ARGS		?= 5 800 200 200 200 3 0 fifo
 

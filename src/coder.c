@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:01:30 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:11:35 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,11 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 	first_dongle = &context->dongles[first];
 	second_dongle = &context->dongles[second];
 	pthread_mutex_lock(&first_dongle->mutex);
-	printf("Coder %d has taken dongle %d.\n", coder->id, first_dongle->id);
+	log_message(coder, "has taken a dongle.");
 	if (first != second)
 	{
 		pthread_mutex_lock(&second_dongle->mutex);
-		printf("Coder %d has taken dongle %d.\n", coder->id, second_dongle->id);
+		log_message(coder, "has taken a dongle.");
 	}
 }
 
@@ -53,11 +53,10 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 	if (first != second)
 	{
 		pthread_mutex_unlock(&second_dongle->mutex);
-		printf("Coder %d has released dongle %d.\n", coder->id,
-			second_dongle->id);
+		log_message(coder, "has released a dongle.");
 	}
 	pthread_mutex_unlock(&first_dongle->mutex);
-	printf("Coder %d has released dongle %d.\n", coder->id, first_dongle->id);
+	log_message(coder, "has released a dongle.");
 }
 
 void	*coder_routine(void *arg)
@@ -75,11 +74,9 @@ void	*coder_routine(void *arg)
 	{
 		set_lock_order(coder, &first, &second);
 		lock_dongles(coder, first, second);
-		printf("Coder %d is compiling with dongles %d and %d.\n", coder->id,
-			context->dongles[coder->left_dongle].id,
-			context->dongles[coder->right_dongle].id);
+		log_message(coder, "is compiling with dongles.");
 		usleep(context->args.time_to_compile);
-		printf("Coder %d has finished compiling.\n", coder->id);
+		log_message(coder, "has finished compiling.");
 		unlock_dongles(coder, first, second);
 		compiles++;
 	}
