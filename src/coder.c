@@ -21,7 +21,8 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 	first_dongle = &sim->dongles[first];
 	second_dongle = &sim->dongles[second];
 	pthread_mutex_lock(&first_dongle->mutex);
-	printf("Coder %d has taken dongle %d.\n", coder->id, first_dongle->id);
+	printf("Coder %d has taken dongle %d.\n", coder->id,
+		first_dongle->id);
 	if (first != second)
 	{
 		pthread_mutex_lock(&second_dongle->mutex);
@@ -61,7 +62,8 @@ void	*coder_routine(void *arg)
 	sim = coder->sim;
 	set_lock_order(coder, &first, &second);
 	lock_dongles(coder, first, second);
-	printf("Coder %d is compiling with dongles %d and %d.\n", coder->id,
+	printf("Coder %d is compiling with dongles %d and %d.\n",
+		coder->id,
 		sim->dongles[coder->left_dongle].id,
 		sim->dongles[coder->right_dongle].id);
 	usleep(sim->args.time_to_compile);
