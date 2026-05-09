@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   coder.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/05/09 00:00:00 by jhoban            #+#    #+#             */
+/*   Updated: 2026/05/09 15:55:02 by jhoban           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 static void	set_lock_order(t_coder *coder, int *first, int *second)
@@ -55,8 +67,8 @@ void	*coder_routine(void *arg)
 {
 	t_coder		*coder;
 	t_sim		*sim;
-	int		first;
-	int		second;
+	int			first;
+	int			second;
 
 	coder = (t_coder *)arg;
 	sim = coder->sim;
