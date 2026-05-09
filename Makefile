@@ -10,7 +10,7 @@ SRCS		= src/main.c \
 			src/coder.c \
 			src/logger.c \
 
-ARGS		?= 5 800 200 200 200 3 0 fifo
+ARGS		?= 5 800 200 200 200 3 50 fifo
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
