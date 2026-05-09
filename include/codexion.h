@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:18:28 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:41:26 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ typedef struct s_dongle
 {
 	int					id;
 	pthread_mutex_t		mutex;
+	struct timeval		last_used_time;
+	pthread_cond_t		cooldown_cond;
 }			t_dongle;
 
 typedef struct s_coder

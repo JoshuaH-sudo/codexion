@@ -6,11 +6,23 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:11:35 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:47:06 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+static void	wait_for_cooldown(t_dongle *dongle, int cooldown_ms)
+{
+	struct timeval	now;
+	long			elapsed_ms;
+
+	gettimeofday(&now, NULL);
+	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
+		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
+	if (elapsed_ms < cooldown_ms)
+		usleep((cooldown_ms - elapsed_ms) * 1000);
+}
 
 static void	set_lock_order(t_coder *coder, int *first, int *second)
 {
@@ -32,10 +44,12 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 	context = coder->context;
 	first_dongle = &context->dongles[first];
 	second_dongle = &context->dongles[second];
+	wait_for_cooldown(first_dongle, context->args.dongle_cooldown);
 	pthread_mutex_lock(&first_dongle->mutex);
 	log_message(coder, "has taken a dongle.");
 	if (first != second)
 	{
+		wait_for_cooldown(second_dongle, context->args.dongle_cooldown);
 		pthread_mutex_lock(&second_dongle->mutex);
 		log_message(coder, "has taken a dongle.");
 	}
@@ -53,9 +67,11 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 	if (first != second)
 	{
 		pthread_mutex_unlock(&second_dongle->mutex);
+		gettimeofday(&second_dongle->last_used_time, NULL);
 		log_message(coder, "has released a dongle.");
 	}
 	pthread_mutex_unlock(&first_dongle->mutex);
+	gettimeofday(&first_dongle->last_used_time, NULL);
 	log_message(coder, "has released a dongle.");
 }
 

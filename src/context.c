@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:18:17 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:42:04 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ static void	destroy_dongles(t_context *context, int count)
 	while (i < count)
 	{
 		pthread_mutex_destroy(&context->dongles[i].mutex);
+		pthread_cond_destroy(&context->dongles[i].cooldown_cond);
 		i++;
 	}
 }
@@ -32,6 +33,13 @@ static int	init_dongles(t_context *context)
 	while (i < context->args.number_of_coders)
 	{
 		context->dongles[i].id = i + 1;
+		context->dongles[i].last_used_time.tv_sec = 0;
+		context->dongles[i].last_used_time.tv_usec = 0;
+		if (pthread_cond_init(&context->dongles[i].cooldown_cond, NULL) != 0)
+		{
+			destroy_dongles(context, i);
+			return (0);
+		}
 		if (pthread_mutex_init(&context->dongles[i].mutex, NULL) != 0)
 		{
 			destroy_dongles(context, i);
