@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:22:07 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,22 +50,18 @@ static int	init_dongles(t_context *context)
 	return (1);
 }
 
-static void	init_coders(t_context *context)
+static int	init_state(t_context *context)
 {
-	int	i;
-
-	i = 0;
-	while (i < context->args.number_of_coders)
+	context->monitor_thread = 0;
+	context->simulation_over = 0;
+	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
+		return (0);
+	if (!init_dongles(context) || !init_log_mutex(context))
 	{
-		context->coders[i].id = i + 1;
-		context->coders[i].left_dongle = i;
-		context->coders[i].right_dongle
-			= (i + 1) % context->args.number_of_coders;
-		context->coders[i].compiles_done = 0;
-		context->coders[i].last_compile_time = context->start_time;
-		context->coders[i].context = context;
-		i++;
+		pthread_mutex_destroy(&context->state_mutex);
+		return (0);
 	}
+	return (1);
 }
 
 int	init_context(t_context *context, t_args *args)
@@ -75,29 +71,20 @@ int	init_context(t_context *context, t_args *args)
 			* context->args.number_of_coders);
 	context->dongles = malloc(sizeof(t_dongle)
 			* context->args.number_of_coders);
-	context->monitor_thread = 0;
-	context->simulation_over = 0;
 	if (!context->coders || !context->dongles)
 	{
 		free(context->coders);
 		free(context->dongles);
 		return (0);
 	}
-	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
+	if (!init_state(context))
 	{
-		free(context->coders);
-		free(context->dongles);
-		return (0);
-	}
-	if (!init_dongles(context) || !init_log_mutex(context))
-	{
-		pthread_mutex_destroy(&context->state_mutex);
 		free(context->coders);
 		free(context->dongles);
 		return (0);
 	}
 	gettimeofday(&context->start_time, NULL);
-	init_coders(context);
+	context_init_coders(context);
 	return (1);
 }
 

@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:22:05 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ typedef struct s_context
 	pthread_t			monitor_thread;
 	pthread_mutex_t		state_mutex;
 	pthread_mutex_t		log_mutex;
-	int				simulation_over;
+	int					simulation_over;
 	struct timeval		start_time;
 }						t_context;
 
@@ -68,6 +68,11 @@ int						init_context(t_context *context, t_args *args);
 void					destroy_context(t_context *context);
 void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
+void					context_init_coders(t_context *context);
+int						coder_should_stop(t_coder *coder);
+void					mark_compile_start(t_coder *coder);
+void					mark_compile_done(t_coder *coder);
+void					context_set_over(t_context *context);
 int						init_log_mutex(t_context *context);
 void					log_message(t_coder *coder, const char *message);
 

@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:27 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:22:04 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,22 @@ static void	join_threads(t_context *context, int count)
 	}
 }
 
+static int	start_monitor(t_context *context)
+{
+	if (pthread_create(&context->monitor_thread, NULL,
+			monitor_routine, context) != 0)
+		return (0);
+	return (1);
+}
+
+static int	stop_and_cleanup(t_context *context, int created)
+{
+	context_set_over(context);
+	join_threads(context, created);
+	destroy_context(context);
+	return (1);
+}
+
 int	main(int argc, char **argv)
 {
 	t_args		args;
@@ -51,24 +67,9 @@ int	main(int argc, char **argv)
 		return (1);
 	created = launch_threads(&context);
 	if (created != -1)
-	{
-		pthread_mutex_lock(&context.state_mutex);
-		context.simulation_over = 1;
-		pthread_mutex_unlock(&context.state_mutex);
-		join_threads(&context, created);
-		destroy_context(&context);
-		return (1);
-	}
-	if (pthread_create(&context.monitor_thread, NULL,
-			monitor_routine, &context) != 0)
-	{
-		pthread_mutex_lock(&context.state_mutex);
-		context.simulation_over = 1;
-		pthread_mutex_unlock(&context.state_mutex);
-		join_threads(&context, context.args.number_of_coders);
-		destroy_context(&context);
-		return (1);
-	}
+		return (stop_and_cleanup(&context, created));
+	if (!start_monitor(&context))
+		return (stop_and_cleanup(&context, context.args.number_of_coders));
 	pthread_join(context.monitor_thread, NULL);
 	join_threads(&context, context.args.number_of_coders);
 	destroy_context(&context);

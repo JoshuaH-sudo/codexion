@@ -10,6 +10,7 @@ SRCS		= src/main.c \
 			src/coder.c \
 			src/logger.c \
 			src/monitor.c \
+			src/state.c \
 
 ARGS		?= 5 800 200 200 200 3 50 fifo
 

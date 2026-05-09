@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:24:06 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,38 +78,26 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 void	*coder_routine(void *arg)
 {
 	t_coder		*coder;
-	t_context	*context;
 	int			first;
 	int			second;
 
 	coder = (t_coder *)arg;
-	context = coder->context;
-	while (1)
+	while (!coder_should_stop(coder))
 	{
-		pthread_mutex_lock(&context->state_mutex);
-		if (context->simulation_over
-			|| coder->compiles_done >= context->args.number_of_compiles_required)
-		{
-			pthread_mutex_unlock(&context->state_mutex);
-			break ;
-		}
-		pthread_mutex_unlock(&context->state_mutex);
 		set_lock_order(coder, &first, &second);
 		lock_dongles(coder, first, second);
-		pthread_mutex_lock(&context->state_mutex);
-		gettimeofday(&coder->last_compile_time, NULL);
-		pthread_mutex_unlock(&context->state_mutex);
+		mark_compile_start(coder);
 		log_message(coder, "is compiling with dongles.");
-		usleep(context->args.time_to_compile * 1000);
+		usleep(coder->context->args.time_to_compile * 1000);
 		log_message(coder, "has finished compiling.");
 		unlock_dongles(coder, first, second);
+		if (coder_should_stop(coder))
+			break ;
 		log_message(coder, "is debugging");
-		usleep(context->args.time_to_debug * 1000);
+		usleep(coder->context->args.time_to_debug * 1000);
 		log_message(coder, "is refactoring");
-		usleep(context->args.time_to_refactor * 1000);
-		pthread_mutex_lock(&context->state_mutex);
-		coder->compiles_done++;
-		pthread_mutex_unlock(&context->state_mutex);
+		usleep(coder->context->args.time_to_refactor * 1000);
+		mark_compile_done(coder);
 	}
 	return (NULL);
 }
