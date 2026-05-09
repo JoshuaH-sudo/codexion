@@ -5,6 +5,7 @@
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
+# include <pthread.h>
 
 typedef struct s_args
 {
@@ -18,6 +19,33 @@ typedef struct s_args
 	int	scheduler;
 }		t_args;
 
+typedef struct s_dongle
+{
+	int			id;
+	pthread_mutex_t	mutex;
+} 		t_dongle;
+
+struct s_sim;
+
+typedef struct s_coder
+{
+	int			id;
+	int			left_dongle;
+	int			right_dongle;
+	pthread_t	thread;
+	struct s_sim	*sim;
+} 		t_coder;
+
+typedef struct s_sim
+{
+	t_args		args;
+	t_coder		*coders;
+	t_dongle	*dongles;
+} 		t_sim;
+
 int		handle_args(int argc, char **argv, t_args *args);
+int		init_sim(t_sim *sim, t_args *args);
+void	destroy_sim(t_sim *sim);
+void	*coder_routine(void *arg);
 
 #endif
