@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   sim.c                                              :+:      :+:    :+:   */
+/*   context.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:13:13 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:18:17 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,18 +71,20 @@ int	init_context(t_context *context, t_args *args)
 		free(context->dongles);
 		return (0);
 	}
-	if (!init_dongles(context))
+	if (!init_dongles(context) || !init_log_mutex(context))
 	{
 		free(context->coders);
 		free(context->dongles);
 		return (0);
 	}
+	gettimeofday(&context->start_time, NULL);
 	init_coders(context);
 	return (1);
 }
 
 void	destroy_context(t_context *context)
 {
+	pthread_mutex_destroy(&context->log_mutex);
 	destroy_dongles(context, context->args.number_of_coders);
 	free(context->coders);
 	free(context->dongles);

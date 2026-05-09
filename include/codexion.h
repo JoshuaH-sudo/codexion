@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:11:43 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 17:18:28 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <stdio.h>
 # include <string.h>
 # include <pthread.h>
+# include <sys/time.h>
 
 typedef struct s_args
 {
@@ -52,12 +53,14 @@ typedef struct s_context
 	t_coder				*coders;
 	t_dongle			*dongles;
 	pthread_mutex_t		log_mutex;
+	struct timeval		start_time;
 }			t_context;
 
 int		handle_args(int argc, char **argv, t_args *args);
 int		init_context(t_context *context, t_args *args);
 void	destroy_context(t_context *context);
 void	*coder_routine(void *arg);
+int		init_log_mutex(t_context *context);
 void	log_message(t_coder *coder, const char *message);
 
 #endif
