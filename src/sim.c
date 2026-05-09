@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:07:09 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:13:13 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ static void	init_coders(t_context *context)
 	}
 }
 
-int	init_sim(t_context *context, t_args *args)
+int	init_context(t_context *context, t_args *args)
 {
 	context->args = *args;
 	context->coders = malloc(sizeof(t_coder)
@@ -81,7 +81,7 @@ int	init_sim(t_context *context, t_args *args)
 	return (1);
 }
 
-void	destroy_sim(t_context *context)
+void	destroy_context(t_context *context)
 {
 	destroy_dongles(context, context->args.number_of_coders);
 	free(context->coders);

@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:27 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:12:07 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:13:13 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,16 +47,16 @@ int	main(int argc, char **argv)
 
 	if (!handle_args(argc, argv, &args))
 		return (1);
-	if (!init_sim(&context, &args))
+	if (!init_context(&context, &args))
 		return (1);
 	created = launch_threads(&context);
 	if (created != -1)
 	{
 		join_threads(&context, created);
-		destroy_sim(&context);
+		destroy_context(&context);
 		return (1);
 	}
 	join_threads(&context, context.args.number_of_coders);
-	destroy_sim(&context);
+	destroy_context(&context);
 	return (0);
 }

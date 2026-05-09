@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:12:18 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:13:13 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,8 @@ typedef struct s_context
 }			t_context;
 
 int		handle_args(int argc, char **argv, t_args *args);
-int		init_sim(t_context *context, t_args *args);
-void	destroy_sim(t_context *context);
+int		init_context(t_context *context, t_args *args);
+void	destroy_context(t_context *context);
 void	*coder_routine(void *arg);
 
 #endif
