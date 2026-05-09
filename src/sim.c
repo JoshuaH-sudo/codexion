@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 15:55:31 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 15:56:42 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,7 @@ static void	init_coders(t_sim *sim)
 	{
 		sim->coders[i].id = i + 1;
 		sim->coders[i].left_dongle = i;
-		sim->coders[i].right_dongle =
-			(i + 1) % sim->args.number_of_coders;
+		sim->coders[i].right_dongle = (i + 1) % sim->args.number_of_coders;
 		sim->coders[i].sim = sim;
 		i++;
 	}
@@ -61,10 +60,8 @@ static void	init_coders(t_sim *sim)
 int	init_sim(t_sim *sim, t_args *args)
 {
 	sim->args = *args;
-	sim->coders = malloc(sizeof(t_coder) *
-			sim->args.number_of_coders);
-	sim->dongles = malloc(sizeof(t_dongle) *
-			sim->args.number_of_coders);
+	sim->coders = malloc(sizeof(t_coder) * sim->args.number_of_coders);
+	sim->dongles = malloc(sizeof(t_dongle) * sim->args.number_of_coders);
 	if (!sim->coders || !sim->dongles)
 	{
 		free(sim->coders);

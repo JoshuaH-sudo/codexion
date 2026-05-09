@@ -30,9 +30,10 @@ fclean: clean
 
 re: fclean all
 
-bonus: all
-
 run: $(NAME)
 	./$(NAME) $(ARGS)
 
-.PHONY: all clean fclean re bonus run
+norm:
+	norminette src include
+
+.PHONY: all clean fclean re run norm

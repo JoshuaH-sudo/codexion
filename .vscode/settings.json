@@ -3,6 +3,9 @@
     "editor.insertSpaces": false,
     "editor.tabSize": 4,
     "editor.detectIndentation": false,
+    "editor.formatOnSave": false,
+    "editor.formatOnType": false,
+    "editor.formatOnPaste": false,
 
     // Show 80-column boundary (lines must not exceed 80 columns)
     "editor.rulers": [80],
@@ -15,8 +18,8 @@
     // Ensure files end with a newline
     "files.insertFinalNewline": true,
 
-    // Make whitespace visible to catch spaces vs tabs mistakes
-    "editor.renderWhitespace": "boundary",
+    // Make all whitespace visible to catch tab/space alignment mistakes early
+    "editor.renderWhitespace": "all",
 
     // C-specific overrides
     "[c]": {

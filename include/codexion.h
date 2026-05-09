@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 15:55:35 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:00:01 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,27 +33,27 @@ typedef struct s_args
 
 typedef struct s_dongle
 {
-	int			id;
+	int				id;
 	pthread_mutex_t	mutex;
-} 		t_dongle;
+}			t_dongle;
 
-struct s_sim;
+struct	s_sim;
 
 typedef struct s_coder
 {
-	int			id;
-	int			left_dongle;
-	int			right_dongle;
-	pthread_t	thread;
+	int				id;
+	int				left_dongle;
+	int				right_dongle;
+	pthread_t		thread;
 	struct s_sim	*sim;
-} 		t_coder;
+}			t_coder;
 
 typedef struct s_sim
 {
 	t_args		args;
 	t_coder		*coders;
 	t_dongle	*dongles;
-} 		t_sim;
+}			t_sim;
 
 int		handle_args(int argc, char **argv, t_args *args);
 int		init_sim(t_sim *sim, t_args *args);
