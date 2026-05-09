@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:47:06 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 18:16:03 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,9 +91,13 @@ void	*coder_routine(void *arg)
 		set_lock_order(coder, &first, &second);
 		lock_dongles(coder, first, second);
 		log_message(coder, "is compiling with dongles.");
-		usleep(context->args.time_to_compile);
+		usleep(context->args.time_to_compile * 1000);
 		log_message(coder, "has finished compiling.");
 		unlock_dongles(coder, first, second);
+		log_message(coder, "is debugging");
+		usleep(context->args.time_to_debug * 1000);
+		log_message(coder, "is refactoring");
+		usleep(context->args.time_to_refactor * 1000);
 		compiles++;
 	}
 	return (NULL);
