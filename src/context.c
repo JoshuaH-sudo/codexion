@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 17:42:04 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ static void	init_coders(t_context *context)
 		context->coders[i].left_dongle = i;
 		context->coders[i].right_dongle
 			= (i + 1) % context->args.number_of_coders;
+		context->coders[i].compiles_done = 0;
+		context->coders[i].last_compile_time = context->start_time;
 		context->coders[i].context = context;
 		i++;
 	}
@@ -73,7 +75,15 @@ int	init_context(t_context *context, t_args *args)
 			* context->args.number_of_coders);
 	context->dongles = malloc(sizeof(t_dongle)
 			* context->args.number_of_coders);
+	context->monitor_thread = 0;
+	context->simulation_over = 0;
 	if (!context->coders || !context->dongles)
+	{
+		free(context->coders);
+		free(context->dongles);
+		return (0);
+	}
+	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
 	{
 		free(context->coders);
 		free(context->dongles);
@@ -81,6 +91,7 @@ int	init_context(t_context *context, t_args *args)
 	}
 	if (!init_dongles(context) || !init_log_mutex(context))
 	{
+		pthread_mutex_destroy(&context->state_mutex);
 		free(context->coders);
 		free(context->dongles);
 		return (0);
@@ -93,6 +104,7 @@ int	init_context(t_context *context, t_args *args)
 void	destroy_context(t_context *context)
 {
 	pthread_mutex_destroy(&context->log_mutex);
+	pthread_mutex_destroy(&context->state_mutex);
 	destroy_dongles(context, context->args.number_of_coders);
 	free(context->coders);
 	free(context->dongles);

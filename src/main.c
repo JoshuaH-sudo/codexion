@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:27 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:13:13 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 22:20:03 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,24 @@ int	main(int argc, char **argv)
 	created = launch_threads(&context);
 	if (created != -1)
 	{
+		pthread_mutex_lock(&context.state_mutex);
+		context.simulation_over = 1;
+		pthread_mutex_unlock(&context.state_mutex);
 		join_threads(&context, created);
 		destroy_context(&context);
 		return (1);
 	}
+	if (pthread_create(&context.monitor_thread, NULL,
+			monitor_routine, &context) != 0)
+	{
+		pthread_mutex_lock(&context.state_mutex);
+		context.simulation_over = 1;
+		pthread_mutex_unlock(&context.state_mutex);
+		join_threads(&context, context.args.number_of_coders);
+		destroy_context(&context);
+		return (1);
+	}
+	pthread_join(context.monitor_thread, NULL);
 	join_threads(&context, context.args.number_of_coders);
 	destroy_context(&context);
 	return (0);
