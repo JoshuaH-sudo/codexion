@@ -9,6 +9,8 @@ SRCS		= src/main.c \
 			src/sim.c \
 			src/coder.c
 
+ARGS		?= 5 800 200 200 200 3 0 fifo
+
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
 all: $(NAME)
@@ -30,4 +32,7 @@ re: fclean all
 
 bonus: all
 
-.PHONY: all clean fclean re bonus
+run: $(NAME)
+	./$(NAME) $(ARGS)
+
+.PHONY: all clean fclean re bonus run
