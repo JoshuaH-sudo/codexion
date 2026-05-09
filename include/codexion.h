@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 16:00:01 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:05:38 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ typedef struct s_coder
 	int				left_dongle;
 	int				right_dongle;
 	pthread_t		thread;
-	struct s_sim	*sim;
+	struct s_sim	*context;
 }			t_coder;
 
 typedef struct s_sim
@@ -56,8 +56,8 @@ typedef struct s_sim
 }			t_sim;
 
 int		handle_args(int argc, char **argv, t_args *args);
-int		init_sim(t_sim *sim, t_args *args);
-void	destroy_sim(t_sim *sim);
+int		init_sim(t_sim *context, t_args *args);
+void	destroy_sim(t_sim *context);
 void	*coder_routine(void *arg);
 
 #endif

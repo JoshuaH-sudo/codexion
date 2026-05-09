@@ -6,35 +6,35 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 15:56:42 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:06:18 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void	destroy_dongles(t_sim *sim, int count)
+static void	destroy_dongles(t_sim *context, int count)
 {
 	int	i;
 
 	i = 0;
 	while (i < count)
 	{
-		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		pthread_mutex_destroy(&context->dongles[i].mutex);
 		i++;
 	}
 }
 
-static int	init_dongles(t_sim *sim)
+static int	init_dongles(t_sim *context)
 {
 	int	i;
 
 	i = 0;
-	while (i < sim->args.number_of_coders)
+	while (i < context->args.number_of_coders)
 	{
-		sim->dongles[i].id = i + 1;
-		if (pthread_mutex_init(&sim->dongles[i].mutex, NULL) != 0)
+		context->dongles[i].id = i + 1;
+		if (pthread_mutex_init(&context->dongles[i].mutex, NULL) != 0)
 		{
-			destroy_dongles(sim, i);
+			destroy_dongles(context, i);
 			return (0);
 		}
 		i++;
@@ -42,45 +42,48 @@ static int	init_dongles(t_sim *sim)
 	return (1);
 }
 
-static void	init_coders(t_sim *sim)
+static void	init_coders(t_sim *context)
 {
 	int	i;
 
 	i = 0;
-	while (i < sim->args.number_of_coders)
+	while (i < context->args.number_of_coders)
 	{
-		sim->coders[i].id = i + 1;
-		sim->coders[i].left_dongle = i;
-		sim->coders[i].right_dongle = (i + 1) % sim->args.number_of_coders;
-		sim->coders[i].sim = sim;
+		context->coders[i].id = i + 1;
+		context->coders[i].left_dongle = i;
+		context->coders[i].right_dongle
+			= (i + 1) % context->args.number_of_coders;
+		context->coders[i].context = context;
 		i++;
 	}
 }
 
-int	init_sim(t_sim *sim, t_args *args)
+int	init_sim(t_sim *context, t_args *args)
 {
-	sim->args = *args;
-	sim->coders = malloc(sizeof(t_coder) * sim->args.number_of_coders);
-	sim->dongles = malloc(sizeof(t_dongle) * sim->args.number_of_coders);
-	if (!sim->coders || !sim->dongles)
+	context->args = *args;
+	context->coders = malloc(sizeof(t_coder)
+			* context->args.number_of_coders);
+	context->dongles = malloc(sizeof(t_dongle)
+			* context->args.number_of_coders);
+	if (!context->coders || !context->dongles)
 	{
-		free(sim->coders);
-		free(sim->dongles);
+		free(context->coders);
+		free(context->dongles);
 		return (0);
 	}
-	if (!init_dongles(sim))
+	if (!init_dongles(context))
 	{
-		free(sim->coders);
-		free(sim->dongles);
+		free(context->coders);
+		free(context->dongles);
 		return (0);
 	}
-	init_coders(sim);
+	init_coders(context);
 	return (1);
 }
 
-void	destroy_sim(t_sim *sim)
+void	destroy_sim(t_sim *context)
 {
-	destroy_dongles(sim, sim->args.number_of_coders);
-	free(sim->coders);
-	free(sim->dongles);
+	destroy_dongles(context, context->args.number_of_coders);
+	free(context->coders);
+	free(context->dongles);
 }

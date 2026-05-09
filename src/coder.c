@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 15:55:42 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/09 16:05:38 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ static void	set_lock_order(t_coder *coder, int *first, int *second)
 
 static void	lock_dongles(t_coder *coder, int first, int second)
 {
-	t_sim		*sim;
+	t_sim		*context;
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 
-	sim = coder->sim;
-	first_dongle = &sim->dongles[first];
-	second_dongle = &sim->dongles[second];
+	context = coder->context;
+	first_dongle = &context->dongles[first];
+	second_dongle = &context->dongles[second];
 	pthread_mutex_lock(&first_dongle->mutex);
 	printf("Coder %d has taken dongle %d.\n", coder->id,
 		first_dongle->id);
@@ -45,13 +45,13 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 
 static void	unlock_dongles(t_coder *coder, int first, int second)
 {
-	t_sim		*sim;
+	t_sim		*context;
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 
-	sim = coder->sim;
-	first_dongle = &sim->dongles[first];
-	second_dongle = &sim->dongles[second];
+	context = coder->context;
+	first_dongle = &context->dongles[first];
+	second_dongle = &context->dongles[second];
 	if (first != second)
 	{
 		pthread_mutex_unlock(&second_dongle->mutex);
@@ -66,19 +66,19 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 void	*coder_routine(void *arg)
 {
 	t_coder		*coder;
-	t_sim		*sim;
+	t_sim		*context;
 	int			first;
 	int			second;
 
 	coder = (t_coder *)arg;
-	sim = coder->sim;
+	context = coder->context;
 	set_lock_order(coder, &first, &second);
 	lock_dongles(coder, first, second);
 	printf("Coder %d is compiling with dongles %d and %d.\n",
 		coder->id,
-		sim->dongles[coder->left_dongle].id,
-		sim->dongles[coder->right_dongle].id);
-	usleep(sim->args.time_to_compile);
+		context->dongles[coder->left_dongle].id,
+		context->dongles[coder->right_dongle].id);
+	usleep(context->args.time_to_compile);
 	printf("Coder %d has finished compiling.\n", coder->id);
 	unlock_dongles(coder, first, second);
 	return (NULL);
