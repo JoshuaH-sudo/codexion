@@ -11,15 +11,16 @@ SRCS		= src/main.c \
 			src/logger.c \
 			src/monitor.c \
 			src/state.c \
+			src/sleep.c \
 
 # Arguments:
-# <num_coders>
-# <compile_time_ms>
-# <compile_time_variance_ms>
-# <rest_time_ms>
-# <rest_time_variance_ms>
-# <num_compilations>
-# <monitor_interval_ms>
+# <number_of_coders>
+# <time_to_burnout>
+# <time_to_compile>
+# <time_to_debug>
+# <time_to_refactor>
+# <number_of_compiles_required>
+# <dongle_cooldown>
 # <scheduler>
 ARGS		?= 5 800 200 200 200 3 50 fifo
 

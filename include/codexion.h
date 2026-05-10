@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/10 07:31:55 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/10 08:50:24 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ int						coder_should_stop(t_coder *coder);
 void					mark_compile_start(t_coder *coder);
 void					mark_compile_done(t_coder *coder);
 void					context_set_over(t_context *context);
+void					sleep_with_stop(t_coder *coder, int ms);
 int						init_log_mutex(t_context *context);
 void					log_message(t_coder *coder, const char *message);
 

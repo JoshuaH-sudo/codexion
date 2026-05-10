@@ -6,22 +6,32 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:24:06 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/10 08:56:27 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void	wait_for_cooldown(t_dongle *dongle, int cooldown_ms)
+static int	wait_for_cooldown(t_coder *coder, t_dongle *dongle, int cooldown_ms)
 {
 	struct timeval	now;
 	long			elapsed_ms;
+	long			remaining;
 
-	gettimeofday(&now, NULL);
-	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
-		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
-	if (elapsed_ms < cooldown_ms)
-		usleep((cooldown_ms - elapsed_ms) * 1000);
+	while (!coder_should_stop(coder))
+	{
+		gettimeofday(&now, NULL);
+		elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
+			+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
+		remaining = cooldown_ms - elapsed_ms;
+		if (remaining <= 0)
+			return (1);
+		if (remaining > 1)
+			usleep(1000);
+		else
+			usleep(remaining * 1000);
+	}
+	return (0);
 }
 
 static void	set_lock_order(t_coder *coder, int *first, int *second)
@@ -35,7 +45,7 @@ static void	set_lock_order(t_coder *coder, int *first, int *second)
 	}
 }
 
-static void	lock_dongles(t_coder *coder, int first, int second)
+static int	lock_dongles(t_coder *coder, int first, int second)
 {
 	t_context	*context;
 	t_dongle	*first_dongle;
@@ -44,15 +54,33 @@ static void	lock_dongles(t_coder *coder, int first, int second)
 	context = coder->context;
 	first_dongle = &context->dongles[first];
 	second_dongle = &context->dongles[second];
-	wait_for_cooldown(first_dongle, context->args.dongle_cooldown);
+	if (!wait_for_cooldown(coder, first_dongle, context->args.dongle_cooldown))
+		return (0);
 	pthread_mutex_lock(&first_dongle->mutex);
+	if (coder_should_stop(coder))
+	{
+		pthread_mutex_unlock(&first_dongle->mutex);
+		return (0);
+	}
 	log_message(coder, "has taken a dongle.");
 	if (first != second)
 	{
-		wait_for_cooldown(second_dongle, context->args.dongle_cooldown);
+		if (!wait_for_cooldown(coder, second_dongle,
+				context->args.dongle_cooldown))
+		{
+			pthread_mutex_unlock(&first_dongle->mutex);
+			return (0);
+		}
 		pthread_mutex_lock(&second_dongle->mutex);
+		if (coder_should_stop(coder))
+		{
+			pthread_mutex_unlock(&second_dongle->mutex);
+			pthread_mutex_unlock(&first_dongle->mutex);
+			return (0);
+		}
 		log_message(coder, "has taken a dongle.");
 	}
+	return (1);
 }
 
 static void	unlock_dongles(t_coder *coder, int first, int second)
@@ -85,18 +113,38 @@ void	*coder_routine(void *arg)
 	while (!coder_should_stop(coder))
 	{
 		set_lock_order(coder, &first, &second);
-		lock_dongles(coder, first, second);
+		if (!lock_dongles(coder, first, second))
+			break ;
+		if (coder_should_stop(coder))
+		{
+			unlock_dongles(coder, first, second);
+			break ;
+		}
 		mark_compile_start(coder);
+		if (coder_should_stop(coder))
+		{
+			unlock_dongles(coder, first, second);
+			break ;
+		}
 		log_message(coder, "is compiling with dongles.");
-		usleep(coder->context->args.time_to_compile * 1000);
+		sleep_with_stop(coder, coder->context->args.time_to_compile);
+		if (coder_should_stop(coder))
+		{
+			unlock_dongles(coder, first, second);
+			break ;
+		}
 		log_message(coder, "has finished compiling.");
 		unlock_dongles(coder, first, second);
 		if (coder_should_stop(coder))
 			break ;
 		log_message(coder, "is debugging");
-		usleep(coder->context->args.time_to_debug * 1000);
+		sleep_with_stop(coder, coder->context->args.time_to_debug);
+		if (coder_should_stop(coder))
+			break ;
 		log_message(coder, "is refactoring");
-		usleep(coder->context->args.time_to_refactor * 1000);
+		sleep_with_stop(coder, coder->context->args.time_to_refactor);
+		if (coder_should_stop(coder))
+			break ;
 		mark_compile_done(coder);
 	}
 	return (NULL);
