@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:22:05 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/10 07:31:55 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ typedef struct s_args
 	int					time_to_refactor;
 	int					number_of_compiles_required;
 	int					dongle_cooldown;
-	int					scheduler;
+	char				*scheduler;
 }						t_args;
 
 typedef struct s_dongle

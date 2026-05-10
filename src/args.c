@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:20 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 15:55:21 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/10 07:32:04 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,9 @@ static void	parse_ints(t_args *args, char **argv)
 static int	parse_scheduler(char *str, t_args *args)
 {
 	if (strcmp(str, "fifo") == 0)
-		args->scheduler = 0;
+		args->scheduler = "fifo";
 	else if (strcmp(str, "edf") == 0)
-		args->scheduler = 1;
+		args->scheduler = "edf";
 	else
 		return (0);
 	return (1);

@@ -12,6 +12,15 @@ SRCS		= src/main.c \
 			src/monitor.c \
 			src/state.c \
 
+# Arguments:
+# <num_coders>
+# <compile_time_ms>
+# <compile_time_variance_ms>
+# <rest_time_ms>
+# <rest_time_variance_ms>
+# <num_compilations>
+# <monitor_interval_ms>
+# <scheduler>
 ARGS		?= 5 800 200 200 200 3 50 fifo
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
