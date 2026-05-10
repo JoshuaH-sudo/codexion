@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:22:07 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/10 14:35:25 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,18 @@ static int	init_state(t_context *context)
 {
 	context->monitor_thread = 0;
 	context->simulation_over = 0;
+	context->next_seq_no = 0;
 	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
+		return (0);
+	if (pthread_mutex_init(&context->scheduler_mutex, NULL) != 0)
+		return (0);
+	if (pthread_cond_init(&context->scheduler_cond, NULL) != 0)
 		return (0);
 	if (!init_dongles(context) || !init_log_mutex(context))
 	{
 		pthread_mutex_destroy(&context->state_mutex);
+		pthread_mutex_destroy(&context->scheduler_mutex);
+		pthread_cond_destroy(&context->scheduler_cond);
 		return (0);
 	}
 	return (1);
@@ -67,8 +74,7 @@ static int	init_state(t_context *context)
 int	init_context(t_context *context, t_args *args)
 {
 	context->args = *args;
-	context->coders = malloc(sizeof(t_coder)
-			* context->args.number_of_coders);
+	context->coders = malloc(sizeof(t_coder) * context->args.number_of_coders);
 	context->dongles = malloc(sizeof(t_dongle)
 			* context->args.number_of_coders);
 	if (!context->coders || !context->dongles)
@@ -83,6 +89,12 @@ int	init_context(t_context *context, t_args *args)
 		free(context->dongles);
 		return (0);
 	}
+	if (!init_scheduler(&context->scheduler_heap,
+			context->args.number_of_coders, context->args.scheduler))
+	{
+		destroy_context(context);
+		return (0);
+	}
 	gettimeofday(&context->start_time, NULL);
 	context_init_coders(context);
 	return (1);
@@ -93,6 +105,7 @@ void	destroy_context(t_context *context)
 	pthread_mutex_destroy(&context->log_mutex);
 	pthread_mutex_destroy(&context->state_mutex);
 	destroy_dongles(context, context->args.number_of_coders);
+	destroy_scheduler(&context->scheduler_heap);
 	free(context->coders);
 	free(context->dongles);
 }

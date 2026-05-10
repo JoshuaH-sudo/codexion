@@ -21,13 +21,12 @@
 
 ## Still Needed
 
-- [ ] Burnout detection logic (`time_to_burnout`) while simulation is running
-- [ ] Stop simulation immediately when any coder burns out
-- [ ] Monitor thread (or equivalent) to detect burnout within required tolerance
-- [ ] Shared `simulation_over` state protected by mutex
-- [ ] Wake blocked/waiting coders when simulation ends
-- [ ] Ensure coder loop exits on burnout, not only on compile-count completion
-- [ ] Print burnout event line in required format
+- [x] Burnout detection logic (`time_to_burnout`) while simulation is running
+- [x] Stop simulation immediately when any coder burns out
+- [x] Monitor thread (or equivalent) to detect burnout within required tolerance
+- [x] Shared `simulation_over` state protected by mutex
+- [x] Ensure coder loop exits on burnout, not only on compile-count completion
+- [x] Print burnout event line in required format
 - [ ] Clarify and fully implement scheduler behavior differences:
 - [ ] FIFO policy behavior
 - [ ] EDF policy behavior
