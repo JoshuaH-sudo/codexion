@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 22:30:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/09 22:22:09 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 14:10:55 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,4 +69,7 @@ void	context_set_over(t_context *context)
 	pthread_mutex_lock(&context->state_mutex);
 	context->simulation_over = 1;
 	pthread_mutex_unlock(&context->state_mutex);
+	pthread_mutex_lock(&context->scheduler_mutex);
+	pthread_cond_broadcast(&context->scheduler_cond);
+	pthread_mutex_unlock(&context->scheduler_mutex);
 }

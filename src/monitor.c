@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 22:22:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/10 08:54:00 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 14:10:55 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,8 @@ static int	burned_coder_index(t_context *context, struct timeval now)
 
 static void	handle_burnout(t_context *context, int burned)
 {
-	context->simulation_over = 1;
 	pthread_mutex_unlock(&context->state_mutex);
+	context_set_over(context);
 	log_message(&context->coders[burned], "burned out");
 }
 
@@ -73,16 +73,13 @@ void	*monitor_routine(void *arg)
 		pthread_mutex_lock(&context->state_mutex);
 		if (context->simulation_over || all_coders_done(context))
 		{
-			context->simulation_over = 1;
 			pthread_mutex_unlock(&context->state_mutex);
+			context_set_over(context);
 			return (NULL);
 		}
 		burned = burned_coder_index(context, now);
 		if (burned != -1)
-		{
-			handle_burnout(context, burned);
-			return (NULL);
-		}
+			return (handle_burnout(context, burned), NULL);
 		pthread_mutex_unlock(&context->state_mutex);
 		usleep(1000);
 	}
