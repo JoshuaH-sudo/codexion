@@ -4,20 +4,20 @@ CC		= cc
 CFLAGS		= -Wall -Wextra -Werror -pthread
 INCLUDES	= -I include
 
-SRCS		= src/main.c \
-			src/args.c \
-			src/context.c \
-			src/context_scheduler.c \
-			src/coder.c \
-			src/coder_scheduler.c \
-			src/logger.c \
-			src/monitor.c \
-			src/state.c \
-			src/sleep.c \
-			src/scheduler.c \
-			src/scheduler_sync.c \
-			src/heap.c \
-			src/utils.c \
+SRCS		= src/core/main.c \
+			src/parsing/args.c \
+			src/core/context.c \
+			src/core/context_scheduler.c \
+			src/coder/coder.c \
+			src/coder/coder_scheduler.c \
+			src/core/logger.c \
+			src/core/monitor.c \
+			src/core/state.c \
+			src/core/sleep.c \
+			src/scheduler/scheduler.c \
+			src/scheduler/scheduler_sync.c \
+			src/scheduler/heap.c \
+			src/common/utils.c \
 
 # Arguments:
 # <number_of_coders>
@@ -38,7 +38,7 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 obj/%.o: src/%.c
-	@mkdir -p obj
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:

@@ -1,18 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   sleep.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/11 14:05:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 13:53:14 by jhoban           ###   ########.fr       */
+/*   Created: 2026/05/10 08:55:00 by jhoban            #+#    #+#             */
+/*   Updated: 2026/05/11 14:40:30 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-long	tv_to_ms(struct timeval tv)
+void	sleep_with_stop(t_coder *coder, int ms)
 {
-	return (tv.tv_sec * 1000L + tv.tv_usec / 1000L);
+	int	remaining;
+
+	remaining = ms;
+	while (remaining > 0 && !coder_should_stop(coder))
+	{
+		usleep(1000);
+		remaining--;
+	}
 }
