@@ -135,12 +135,94 @@ All output is serialized under `log_mutex`. After stop, non-burnout logs are sup
 
 ---
 
+## Blocking Cases Handled
+
+### Deadlock Prevention and Coffman's Conditions
+
+The implementation prevents circular-wait deadlock by enforcing deterministic
+dongle lock order (`min(id), max(id)`) for every coder.
+
+- **Mutual exclusion**: each dongle is guarded by a mutex.
+- **Hold and wait**: coders can still wait for a second dongle, but ordering
+    prevents circular dependency.
+- **No preemption**: mutex ownership is released explicitly after compile.
+- **Circular wait**: broken by global lock ordering rule.
+
+### Starvation Prevention
+
+- In **FIFO**, scheduler order is by `seq_no`, so admission is first-come,
+    first-served.
+- In **EDF**, order is by deadline (`last_compile_time + time_to_burnout`).
+- An EDF aging safeguard in heap comparison biases toward older queued requests
+    when queue drift grows, preserving liveness under feasible timing.
+
+### Cooldown Handling
+
+Each dongle stores `last_used_time`. Before locking, coders wait until
+`dongle_cooldown` expires. This is implemented as 1 ms cooperative polling,
+re-checking stop conditions between waits.
+
+### Precise Burnout Detection
+
+The monitor thread checks all coders every 1 ms and compares elapsed time since
+`last_compile_time` with `time_to_burnout`. On burnout, it sets simulation stop
+state and logs `burned out`.
+
+### Log Serialization
+
+All logging passes through `log_mutex` to prevent interleaving. After stop,
+non-burnout messages are filtered so shutdown output remains consistent.
+
+---
+
 ## Synchronization Summary
 
 - `state_mutex`: protects `simulation_over`, `last_compile_time`, and compile counters.
 - `scheduler_mutex` + `scheduler_cond`: protects scheduler heap and coordinates turn-taking.
 - `dongle[i].mutex`: protects each dongle lock ownership and cooldown timestamp.
 - `log_mutex`: prevents interleaved log lines.
+
+---
+
+## Thread Synchronization Mechanisms
+
+### `pthread_mutex_t`
+
+The project uses multiple mutexes for disjoint shared-state domains:
+
+- `state_mutex` protects `simulation_over`, compile counters, and
+    `last_compile_time` reads/writes shared between coder threads and monitor.
+- `scheduler_mutex` protects heap operations and `next_seq_no` in scheduler
+    admission.
+- per-dongle mutexes protect dongle ownership and cooldown timestamp updates.
+- `log_mutex` serializes all output.
+
+Race prevention example: monitor reads `last_compile_time` under `state_mutex`,
+and coders write it under the same mutex (`mark_compile_start`).
+
+### `pthread_cond_t`
+
+`scheduler_cond` provides thread-safe communication for admission ordering:
+
+- coders enqueue a scheduler job and wait while not at heap top,
+- the thread that pops top broadcasts to wake others,
+- stop path (`context_set_over`) broadcasts to unblock all waiters.
+
+This avoids busy-wait on scheduler turn-taking and ensures prompt wake-up on
+global stop.
+
+### Custom Event Implementation
+
+The combination of `simulation_over` (shared stop flag), `scheduler_cond`
+broadcasts, and frequent stop checks functions as a custom event system:
+
+- **Event source**: monitor detects burnout or all-coders-done.
+- **Event publication**: `context_set_over()` sets stop flag and broadcasts.
+- **Event consumers**: coder and scheduler wait loops exit safely when stop is
+    observed.
+
+This pattern provides deterministic, thread-safe stop propagation between coder
+threads and the monitor.
 
 ---
 
