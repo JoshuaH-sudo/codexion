@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/10 14:35:25 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 12:54:58 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,26 +52,7 @@ typedef struct s_args
 	int					dongle_cooldown;
 	char				*scheduler;
 }						t_args;
-typedef enum e_policy
-{
-	POLICY_FIFO,
-	POLICY_EDF
-}						t_policy;
 
-typedef struct s_job
-{
-	int					coder_id;
-	long				seq_no;
-	long				deadline_ms;
-}						t_job;
-
-typedef struct s_heap
-{
-	t_job				*data;
-	int					size;
-	int					capacity;
-	t_policy			policy;
-}						t_heap;
 typedef struct s_dongle
 {
 	int					id;
@@ -110,6 +91,7 @@ typedef struct s_context
 int						handle_args(int argc, char **argv, t_args *args);
 int						init_context(t_context *context, t_args *args);
 void					destroy_context(t_context *context);
+int						context_init_scheduler_heap(t_context *context);
 void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
@@ -120,13 +102,19 @@ void					context_set_over(t_context *context);
 void					sleep_with_stop(t_coder *coder, int ms);
 int						init_log_mutex(t_context *context);
 void					log_message(t_coder *coder, const char *message);
-int						scheduler_init(t_heap *heap, int capacity, t_policy policy);
+int						scheduler_init(t_heap *heap, int capacity,
+							t_policy policy);
 void					scheduler_destroy(t_heap *heap);
 int						scheduler_push_job(t_heap *heap, t_job job);
 int						scheduler_pop_job(t_heap *heap, t_job *out);
 int						scheduler_peek_job(t_heap *heap, t_job *out);
 int						scheduler_is_empty(t_heap *heap);
-void					scheduler_request_slot(t_context *context, int coder_id,
-	long deadline_ms);
+void					scheduler_request_slot(t_context *context,
+							int coder_id, long deadline_ms);
 int						scheduler_wait_turn(t_context *context, int coder_id);
+void					heap_swap_jobs(t_job *a, t_job *b);
+int						heap_job_less(const t_job *a, const t_job *b,
+							t_policy policy);
+void					heap_heapify_up(t_heap *heap, int idx);
+void					heap_heapify_down(t_heap *heap, int idx);
 #endif

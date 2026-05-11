@@ -7,11 +7,15 @@ INCLUDES	= -I include
 SRCS		= src/main.c \
 			src/args.c \
 			src/context.c \
+			src/context_scheduler.c \
 			src/coder.c \
 			src/logger.c \
 			src/monitor.c \
 			src/state.c \
 			src/sleep.c \
+			src/scheduler.c \
+			src/scheduler_sync.c \
+			src/heap.c \
 
 # Arguments:
 # <number_of_coders>

@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/10 14:35:25 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 12:52:35 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,7 @@ int	init_context(t_context *context, t_args *args)
 		free(context->dongles);
 		return (0);
 	}
-	if (!init_scheduler(&context->scheduler_heap,
-			context->args.number_of_coders, context->args.scheduler))
+	if (!context_init_scheduler_heap(context))
 	{
 		destroy_context(context);
 		return (0);
@@ -104,8 +103,10 @@ void	destroy_context(t_context *context)
 {
 	pthread_mutex_destroy(&context->log_mutex);
 	pthread_mutex_destroy(&context->state_mutex);
+	pthread_mutex_destroy(&context->scheduler_mutex);
+	pthread_cond_destroy(&context->scheduler_cond);
 	destroy_dongles(context, context->args.number_of_coders);
-	destroy_scheduler(&context->scheduler_heap);
+	scheduler_destroy(&context->scheduler_heap);
 	free(context->coders);
 	free(context->dongles);
 }
