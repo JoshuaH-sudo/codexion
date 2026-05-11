@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 12:54:58 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 13:55:23 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,8 @@ int						context_init_scheduler_heap(t_context *context);
 void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
+int						coder_scheduler_enter_compile_slot(t_coder *coder);
+long					coder_deadline_ms(t_coder *coder);
 int						coder_should_stop(t_coder *coder);
 void					mark_compile_start(t_coder *coder);
 void					mark_compile_done(t_coder *coder);
@@ -117,4 +119,5 @@ int						heap_job_less(const t_job *a, const t_job *b,
 							t_policy policy);
 void					heap_heapify_up(t_heap *heap, int idx);
 void					heap_heapify_down(t_heap *heap, int idx);
+long					tv_to_ms(struct timeval tv);
 #endif

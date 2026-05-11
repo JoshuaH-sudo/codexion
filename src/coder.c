@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/10 08:57:26 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 13:54:38 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,13 +107,15 @@ static int	run_cycle(t_coder *coder, int first, int second)
 
 void	*coder_routine(void *arg)
 {
-	t_coder		*coder;
-	int			first;
-	int			second;
+	t_coder	*coder;
+	int		first;
+	int		second;
 
 	coder = (t_coder *)arg;
 	while (!coder_should_stop(coder))
 	{
+		if (!coder_scheduler_enter_compile_slot(coder))
+			break ;
 		first = coder->left_dongle;
 		second = coder->right_dongle;
 		if (first > second)

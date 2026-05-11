@@ -9,6 +9,7 @@ SRCS		= src/main.c \
 			src/context.c \
 			src/context_scheduler.c \
 			src/coder.c \
+			src/coder_scheduler.c \
 			src/logger.c \
 			src/monitor.c \
 			src/state.c \
@@ -16,6 +17,7 @@ SRCS		= src/main.c \
 			src/scheduler.c \
 			src/scheduler_sync.c \
 			src/heap.c \
+			src/utils.c \
 
 # Arguments:
 # <number_of_coders>
