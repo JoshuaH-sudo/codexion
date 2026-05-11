@@ -47,8 +47,11 @@ fclean: clean
 
 re: fclean all
 
+# run with short timeouts for testing:
+# make run ARGS="5 100 20 20 20 3 10 fifo"
 run: $(NAME)
 	./$(NAME) $(ARGS)
+
 
 norm:
 	norminette src include
