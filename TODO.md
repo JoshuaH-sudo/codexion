@@ -27,14 +27,14 @@
 - [x] Shared `simulation_over` state protected by mutex
 - [x] Ensure coder loop exits on burnout, not only on compile-count completion
 - [x] Print burnout event line in required format
-- [ ] Clarify and fully implement scheduler behavior differences:
-- [ ] FIFO policy behavior
-- [ ] EDF policy behavior
-- [ ] Remove unused scheduler/cooldown condition infrastructure if not used (or wire it fully)
-- [ ] Validate starvation behavior under stress cases
+- [x] Clarify and fully implement scheduler behavior differences:
+- [x] FIFO policy behavior
+- [x] EDF policy behavior
+- [x] Remove unused scheduler/cooldown condition infrastructure if not used (or wire it fully)
+- [x] Validate starvation behavior under stress cases
 
 ## Nice-to-Have Validation
 
-- [ ] Add deterministic test scenarios for 1 coder, high contention, and cooldown edge cases
-- [ ] Add a quick runtime check target/script for repeated smoke tests
-- [ ] Keep `README.md` aligned with real implementation status as features land
+- [x] Add deterministic test scenarios for 1 coder, high contention, and cooldown edge cases
+- [x] Add a quick runtime check target/script for repeated smoke tests
+- [x] Keep `README.md` aligned with real implementation status as features land

@@ -58,8 +58,11 @@ re: fclean all
 run: $(NAME)
 	./$(NAME) $(ARGS)
 
+smoke: $(NAME)
+	./scripts/smoke_tests.sh
+
 
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run norm
+.PHONY: all clean fclean re run smoke norm
