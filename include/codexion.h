@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 13:55:23 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/11 14:22:35 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,10 +114,13 @@ int						scheduler_is_empty(t_heap *heap);
 void					scheduler_request_slot(t_context *context,
 							int coder_id, long deadline_ms);
 int						scheduler_wait_turn(t_context *context, int coder_id);
-void					heap_swap_jobs(t_job *a, t_job *b);
-int						heap_job_less(const t_job *a, const t_job *b,
-							t_policy policy);
-void					heap_heapify_up(t_heap *heap, int idx);
-void					heap_heapify_down(t_heap *heap, int idx);
+void					swap_heap_nodes(t_job *left_node,
+							t_job *right_node);
+int						job_has_higher_priority(const t_job *candidate,
+							const t_job *current,
+							t_policy scheduler_policy,
+							int starvation_window);
+void					sift_up_min_heap(t_heap *queue, int node_index);
+void					sift_down_min_heap(t_heap *queue, int node_index);
 long					tv_to_ms(struct timeval tv);
 #endif
