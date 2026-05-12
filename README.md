@@ -238,6 +238,6 @@ threads and the monitor.
 - [Priority Queue / Binary Heap — Wikipedia](https://en.wikipedia.org/wiki/Binary_heap)
 
 ### Deadlock Theory
-- [Coffman Conditions — Wikipedia](https://en.wikipedia.org/wiki/Deadlock#Coffman_conditions)
+- [Coffman Conditions — Wikipedia](https://en.wikipedia.org/wiki/Deadlock_(computer_science))
 - [Operating System Concepts — Silberschatz, Galvin, Gagne (Chapter 7: Deadlocks)](https://www.os-book.com/)
 
