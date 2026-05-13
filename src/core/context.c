@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 18:06:10 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ static void	destroy_dongles(t_context *context, int count)
 	{
 		pthread_mutex_destroy(&context->dongles[i].mutex);
 		pthread_cond_destroy(&context->dongles[i].cooldown_cond);
+		scheduler_destroy(&context->dongles[i].request_queue);
 		i++;
 	}
 }
@@ -35,12 +36,20 @@ static int	init_dongles(t_context *context)
 		context->dongles[i].id = i + 1;
 		context->dongles[i].last_used_time.tv_sec = 0;
 		context->dongles[i].last_used_time.tv_usec = 0;
+		context->dongles[i].policy = (strcmp(context->args.scheduler, "fifo") == 0)
+			? POLICY_FIFO : POLICY_EDF;
 		if (pthread_cond_init(&context->dongles[i].cooldown_cond, NULL) != 0)
 		{
 			destroy_dongles(context, i);
 			return (0);
 		}
 		if (pthread_mutex_init(&context->dongles[i].mutex, NULL) != 0)
+		{
+			destroy_dongles(context, i);
+			return (0);
+		}
+		if (!scheduler_init(&context->dongles[i].request_queue, context->args.number_of_coders,
+				context->dongles[i].policy))
 		{
 			destroy_dongles(context, i);
 			return (0);

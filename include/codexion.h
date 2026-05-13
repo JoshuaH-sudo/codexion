@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/13 16:31:22 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 18:06:10 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,8 @@ typedef struct s_dongle
 	pthread_mutex_t		mutex;
 	struct timeval		last_used_time;
 	pthread_cond_t		cooldown_cond;
+	t_heap				request_queue;
+	t_policy			policy;
 }						t_dongle;
 
 typedef struct s_coder
@@ -95,6 +97,8 @@ int						context_init_scheduler_heap(t_context *context);
 void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
+int						coder_scheduler_request_compile_slot(t_coder *coder);
+int						coder_scheduler_wait_for_turn(t_coder *coder);
 int						coder_scheduler_enter_compile_slot(t_coder *coder);
 long					coder_deadline_ms(t_coder *coder);
 int						coder_should_stop(t_coder *coder);
