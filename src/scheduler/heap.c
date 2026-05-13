@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 14:40:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 16:34:14 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,12 @@ void	swap_heap_nodes(t_job *left_node, t_job *right_node)
 	*right_node = temp;
 }
 
-int	job_has_higher_priority(const t_job *candidate,
-	const t_job *current, t_policy scheduler_policy, int starvation_window)
+int	job_has_higher_priority(const t_job *candidate, const t_job *current,
+		const t_heap *queue)
 {
 	long	gap;
 
-	if (scheduler_policy == POLICY_FIFO)
+	if (queue->policy == POLICY_FIFO)
 	{
 		if (candidate->seq_no != current->seq_no)
 			return (candidate->seq_no < current->seq_no);
@@ -35,7 +35,7 @@ int	job_has_higher_priority(const t_job *candidate,
 	gap = candidate->seq_no - current->seq_no;
 	if (gap < 0)
 		gap = -gap;
-	if (gap >= starvation_window)
+	if (gap >= queue->capacity)
 		return (candidate->seq_no < current->seq_no);
 	if (candidate->deadline_ms != current->deadline_ms)
 		return (candidate->deadline_ms < current->deadline_ms);
@@ -52,7 +52,7 @@ void	sift_up_min_heap(t_heap *queue, int node_index)
 	{
 		parent = (node_index - 1) / 2;
 		if (!job_has_higher_priority(&queue->data[node_index],
-				&queue->data[parent], queue->policy, queue->capacity))
+				&queue->data[parent], queue))
 			break ;
 		swap_heap_nodes(&queue->data[node_index], &queue->data[parent]);
 		node_index = parent;
@@ -70,13 +70,11 @@ void	sift_down_min_heap(t_heap *queue, int node_index)
 		left = node_index * 2 + 1;
 		right = node_index * 2 + 2;
 		smallest = node_index;
-		if (left < queue->size
-			&& job_has_higher_priority(&queue->data[left],
-				&queue->data[smallest], queue->policy, queue->capacity))
+		if (left < queue->size && job_has_higher_priority(&queue->data[left],
+				&queue->data[smallest], queue))
 			smallest = left;
-		if (right < queue->size
-			&& job_has_higher_priority(&queue->data[right],
-				&queue->data[smallest], queue->policy, queue->capacity))
+		if (right < queue->size && job_has_higher_priority(&queue->data[right],
+				&queue->data[smallest], queue))
 			smallest = right;
 		if (smallest == node_index)
 			break ;

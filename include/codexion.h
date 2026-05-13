@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:22:35 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 16:31:22 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,8 +118,7 @@ void					swap_heap_nodes(t_job *left_node,
 							t_job *right_node);
 int						job_has_higher_priority(const t_job *candidate,
 							const t_job *current,
-							t_policy scheduler_policy,
-							int starvation_window);
+							const t_heap *queue);
 void					sift_up_min_heap(t_heap *queue, int node_index);
 void					sift_down_min_heap(t_heap *queue, int node_index);
 long					tv_to_ms(struct timeval tv);
