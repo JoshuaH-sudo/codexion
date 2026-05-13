@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 09:58:45 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 17:38:21 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ int	scheduler_push_job(t_heap *heap, t_job job)
 	if (heap->size >= heap->capacity)
 		return (0);
 	heap->data[heap->size] = job;
-	sift_up_min_heap(heap, heap->size);
 	heap->size++;
+	sift_up_min_heap(heap, heap->size - 1);
 	return (1);
 }
 

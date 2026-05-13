@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 14:40:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/13 16:34:14 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/13 17:39:39 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,24 +24,10 @@ void	swap_heap_nodes(t_job *left_node, t_job *right_node)
 int	job_has_higher_priority(const t_job *candidate, const t_job *current,
 		const t_heap *queue)
 {
-	long	gap;
-
 	if (queue->policy == POLICY_FIFO)
-	{
-		if (candidate->seq_no != current->seq_no)
-			return (candidate->seq_no < current->seq_no);
-		return (candidate->coder_id < current->coder_id);
-	}
-	gap = candidate->seq_no - current->seq_no;
-	if (gap < 0)
-		gap = -gap;
-	if (gap >= queue->capacity)
 		return (candidate->seq_no < current->seq_no);
-	if (candidate->deadline_ms != current->deadline_ms)
+	else
 		return (candidate->deadline_ms < current->deadline_ms);
-	if (candidate->seq_no != current->seq_no)
-		return (candidate->seq_no < current->seq_no);
-	return (candidate->coder_id < current->coder_id);
 }
 
 void	sift_up_min_heap(t_heap *queue, int node_index)
@@ -70,6 +56,8 @@ void	sift_down_min_heap(t_heap *queue, int node_index)
 		left = node_index * 2 + 1;
 		right = node_index * 2 + 2;
 		smallest = node_index;
+		printf("Sift down node %d: left=%d, right=%d, smallest=%d\n",
+			node_index, left, right, smallest);
 		if (left < queue->size && job_has_higher_priority(&queue->data[left],
 				&queue->data[smallest], queue))
 			smallest = left;
