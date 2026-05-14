@@ -1,5 +1,7 @@
 codexion
 stress_test
+.DS_Store
+
 
 # Prerequisites
 *.d
