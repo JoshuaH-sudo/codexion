@@ -1,4 +1,5 @@
 NAME		= codexion
+STRESS_NAME	= stress_test
 
 CC		= cc
 CFLAGS		= -Wall -Wextra -Werror -pthread
@@ -61,8 +62,12 @@ run: $(NAME)
 smoke: $(NAME)
 	./scripts/smoke_tests.sh
 
+stress:
+	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
+	./$(STRESS_NAME)
+
 
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke norm
+.PHONY: all clean fclean re run smoke stress norm
