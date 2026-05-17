@@ -66,7 +66,6 @@ stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
 	./$(STRESS_NAME)
 
-
 norm:
 	norminette src include
 

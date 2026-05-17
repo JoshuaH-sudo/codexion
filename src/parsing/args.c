@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:20 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/17 10:41:35 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/17 10:48:25 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 static int	is_valid_uint(char *str)
 {
 	long	value;
-	int	i;
+	int		i;
 
 	value = 0;
 	i = 0;
