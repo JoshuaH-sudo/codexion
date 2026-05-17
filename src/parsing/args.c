@@ -6,22 +6,28 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:20 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/17 10:41:35 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+#include <limits.h>
 
 static int	is_valid_uint(char *str)
 {
+	long	value;
 	int	i;
 
+	value = 0;
 	i = 0;
 	if (!str || !str[0])
 		return (0);
 	while (str[i])
 	{
 		if (str[i] < '0' || str[i] > '9')
+			return (0);
+		value = (value * 10) + (str[i] - '0');
+		if (value > INT_MAX)
 			return (0);
 		i++;
 	}
@@ -75,7 +81,7 @@ int	handle_args(int argc, char **argv, t_args *args)
 	}
 	if (!validate_ints(argv))
 	{
-		fprintf(stderr, "Error: invalid integer argument\n");
+		fprintf(stderr, "Error: invalid integer argument (0 - 2147483647)\n");
 		return (0);
 	}
 	parse_ints(args, argv);
