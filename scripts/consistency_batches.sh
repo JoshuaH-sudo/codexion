@@ -6,8 +6,7 @@ BIN="$ROOT_DIR/codexion"
 
 BATCHES="${1:-20}"
 RUNS_PER_BATCH="${2:-10}"
-
-ARGS=(10 500 80 80 80 3 10 edf)
+read -r -a ARGS <<< "${ARGS:-10 500 80 80 80 3 10 edf}"
 
 if [ ! -x "$BIN" ]; then
 	echo "Building codexion..."

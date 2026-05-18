@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/18 17:23:49 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 19:01:26 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,11 @@ void	*coder_routine(void *arg)
 			second = coder->left_dongle;
 		}
 		if (!coder_lock_dongles(coder, first, second))
+		{
+			scheduler_release_slot(coder->context, coder->id);
 			break ;
+		}
+		scheduler_release_slot(coder->context, coder->id);
 		if (!run_cycle(coder, first, second))
 			break ;
 	}

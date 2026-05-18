@@ -31,6 +31,10 @@ SRCS		= src/main.c \
 # <dongle_cooldown>
 # <scheduler>
 ARGS		?= 5 800 200 200 200 3 50 fifo
+CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
+CONSISTENCY_RUNS	?= 10
+BATCHES		?= 20
+RUNS_PER_BATCH	?= 10
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
@@ -63,6 +67,12 @@ run: $(NAME)
 smoke: $(NAME)
 	./scripts/smoke_tests.sh
 
+consistency: $(NAME)
+	ARGS="$(CONSISTENCY_ARGS)" RUNS="$(CONSISTENCY_RUNS)" ./scripts/consistency_test.sh
+
+consistency-batches: $(NAME)
+	ARGS="$(CONSISTENCY_ARGS)" ./scripts/consistency_batches.sh $(BATCHES) $(RUNS_PER_BATCH)
+
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
 	./$(STRESS_NAME)
@@ -70,4 +80,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches stress norm
