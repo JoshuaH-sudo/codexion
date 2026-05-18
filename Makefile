@@ -35,6 +35,7 @@ CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
 CONSISTENCY_RUNS	?= 10
 BATCHES		?= 20
 RUNS_PER_BATCH	?= 10
+MATRIX_RUNS	?= 5
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
@@ -73,6 +74,9 @@ consistency: $(NAME)
 consistency-batches: $(NAME)
 	ARGS="$(CONSISTENCY_ARGS)" ./scripts/consistency_batches.sh $(BATCHES) $(RUNS_PER_BATCH)
 
+edge-matrix: $(NAME)
+	RUNS="$(MATRIX_RUNS)" bash ./scripts/edge_matrix.sh
+
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
 	./$(STRESS_NAME)
@@ -80,4 +84,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke consistency consistency-batches stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix stress norm
