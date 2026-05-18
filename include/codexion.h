@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/13 16:31:22 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 17:26:00 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,10 @@ void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
 int						coder_scheduler_enter_compile_slot(t_coder *coder);
+int						coder_lock_dongles(t_coder *coder, int first,
+							int second);
+void					coder_unlock_dongles(t_coder *coder, int first,
+							int second);
 long					coder_deadline_ms(t_coder *coder);
 int						coder_should_stop(t_coder *coder);
 void					mark_compile_start(t_coder *coder);

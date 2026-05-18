@@ -10,6 +10,7 @@ SRCS		= src/main.c \
 			src/core/context.c \
 			src/core/context_scheduler.c \
 			src/coder/coder.c \
+			src/coder/coder_dongles.c \
 			src/coder/coder_scheduler.c \
 			src/core/logger.c \
 			src/core/monitor.c \
