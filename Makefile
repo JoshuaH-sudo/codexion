@@ -5,7 +5,7 @@ CC		= cc
 CFLAGS		= -Wall -Wextra -Werror -pthread
 INCLUDES	= -I include
 
-SRCS		= src/core/main.c \
+SRCS		= src/main.c \
 			src/parsing/args.c \
 			src/core/context.c \
 			src/core/context_scheduler.c \

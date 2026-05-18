@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 22:22:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 14:22:34 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,18 +53,18 @@ static int	burned_coder_index(t_context *context, struct timeval now)
 	return (-1);
 }
 
-static void	handle_burnout(t_context *context, int burned)
+static void	handle_burnout(t_context *context, int burned_index)
 {
 	pthread_mutex_unlock(&context->state_mutex);
 	context_set_over(context);
-	log_message(&context->coders[burned], "burned out");
+	log_message(&context->coders[burned_index], "burned out");
 }
 
 void	*monitor_routine(void *arg)
 {
 	t_context		*context;
 	struct timeval	now;
-	int				burned;
+	int				burned_index;
 
 	context = (t_context *)arg;
 	while (1)
@@ -77,9 +77,9 @@ void	*monitor_routine(void *arg)
 			context_set_over(context);
 			return (NULL);
 		}
-		burned = burned_coder_index(context, now);
-		if (burned != -1)
-			return (handle_burnout(context, burned), NULL);
+		burned_index = burned_coder_index(context, now);
+		if (burned_index != -1)
+			return (handle_burnout(context, burned_index), NULL);
 		pthread_mutex_unlock(&context->state_mutex);
 		usleep(1000);
 	}
