@@ -6,32 +6,42 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 16:16:19 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static int	wait_for_cooldown(t_coder *coder, t_dongle *dongle, int cooldown_ms)
+static long	dongle_remaining_cooldown_ms(t_dongle *dongle, int cooldown_ms)
 {
 	struct timeval	now;
 	long			elapsed_ms;
-	long			remaining;
+	long			remaining_ms;
 
-	while (!coder_should_stop(coder))
+	gettimeofday(&now, NULL);
+	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
+		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
+	remaining_ms = cooldown_ms - elapsed_ms;
+	if (remaining_ms < 0)
+		return (0);
+	return (remaining_ms);
+}
+
+static int	try_lock_ready_dongle(t_dongle *dongle, int cooldown_ms,
+		long *wait_ms)
+{
+	long	remaining_ms;
+
+	if (pthread_mutex_trylock(&dongle->mutex) != 0)
+		return (0);
+	remaining_ms = dongle_remaining_cooldown_ms(dongle, cooldown_ms);
+	if (remaining_ms > 0)
 	{
-		gettimeofday(&now, NULL);
-		elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
-			+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
-		remaining = cooldown_ms - elapsed_ms;
-		if (remaining <= 0)
-			return (1);
-		if (remaining > 1)
-			usleep(1000);
-		else
-			usleep(remaining * 1000);
+		pthread_mutex_unlock(&dongle->mutex);
+		*wait_ms = remaining_ms;
+		return (0);
 	}
-	return (0);
+	return (1);
 }
 
 static int	lock_dongles(t_coder *coder, int first, int second)
@@ -39,26 +49,34 @@ static int	lock_dongles(t_coder *coder, int first, int second)
 	t_context	*context;
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
+	long		wait_ms;
 
 	context = coder->context;
 	first_dongle = &context->dongles[first];
 	second_dongle = &context->dongles[second];
-	if (!wait_for_cooldown(coder, first_dongle, context->args.dongle_cooldown))
-		return (0);
-	pthread_mutex_lock(&first_dongle->mutex);
-	if (coder_should_stop(coder))
-		return (pthread_mutex_unlock(&first_dongle->mutex), 0);
-	log_message(coder, "has taken a dongle.");
-	if (first == second)
+	while (!coder_should_stop(coder))
+	{
+		wait_ms = 1;
+		if (!try_lock_ready_dongle(first_dongle, context->args.dongle_cooldown,
+				&wait_ms))
+		{
+			usleep(wait_ms * 1000);
+			continue ;
+		}
+		if (first == second)
+			return (log_message(coder, "has taken a dongle."), 1);
+		if (!try_lock_ready_dongle(second_dongle,
+				context->args.dongle_cooldown, &wait_ms))
+		{
+			pthread_mutex_unlock(&first_dongle->mutex);
+			usleep(wait_ms * 1000);
+			continue ;
+		}
+		log_message(coder, "has taken a dongle.");
+		log_message(coder, "has taken a dongle.");
 		return (1);
-	if (!wait_for_cooldown(coder, second_dongle, context->args.dongle_cooldown))
-		return (pthread_mutex_unlock(&first_dongle->mutex), 0);
-	pthread_mutex_lock(&second_dongle->mutex);
-	if (coder_should_stop(coder))
-		return (pthread_mutex_unlock(&second_dongle->mutex),
-			pthread_mutex_unlock(&first_dongle->mutex), 0);
-	log_message(coder, "has taken a dongle.");
-	return (1);
+	}
+	return (0);
 }
 
 static void	unlock_dongles(t_coder *coder, int first, int second)
@@ -72,12 +90,12 @@ static void	unlock_dongles(t_coder *coder, int first, int second)
 	second_dongle = &context->dongles[second];
 	if (first != second)
 	{
-		pthread_mutex_unlock(&second_dongle->mutex);
 		gettimeofday(&second_dongle->last_used_time, NULL);
+		pthread_mutex_unlock(&second_dongle->mutex);
 		log_message(coder, "has released a dongle.");
 	}
-	pthread_mutex_unlock(&first_dongle->mutex);
 	gettimeofday(&first_dongle->last_used_time, NULL);
+	pthread_mutex_unlock(&first_dongle->mutex);
 	log_message(coder, "has released a dongle.");
 }
 

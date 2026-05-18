@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 14:40:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/13 17:39:39 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 16:16:16 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@ int	job_has_higher_priority(const t_job *candidate, const t_job *current,
 {
 	if (queue->policy == POLICY_FIFO)
 		return (candidate->seq_no < current->seq_no);
-	else
+	if (candidate->deadline_ms != current->deadline_ms)
 		return (candidate->deadline_ms < current->deadline_ms);
+	return (candidate->seq_no < current->seq_no);
 }
 
 void	sift_up_min_heap(t_heap *queue, int node_index)
@@ -56,8 +57,6 @@ void	sift_down_min_heap(t_heap *queue, int node_index)
 		left = node_index * 2 + 1;
 		right = node_index * 2 + 2;
 		smallest = node_index;
-		printf("Sift down node %d: left=%d, right=%d, smallest=%d\n",
-			node_index, left, right, smallest);
 		if (left < queue->size && job_has_higher_priority(&queue->data[left],
 				&queue->data[smallest], queue))
 			smallest = left;
