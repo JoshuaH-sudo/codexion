@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:34 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/18 19:01:26 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 19:06:26 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,6 @@ int						scheduler_is_empty(t_heap *heap);
 void					scheduler_request_slot(t_context *context,
 							int coder_id, long deadline_ms);
 int						scheduler_wait_turn(t_context *context, int coder_id);
-void					scheduler_release_slot(t_context *context, int coder_id);
 void					swap_heap_nodes(t_job *left_node,
 							t_job *right_node);
 int						job_has_higher_priority(const t_job *candidate,
