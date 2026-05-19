@@ -51,8 +51,6 @@ fclean: clean
 
 re: fclean all
 
-# run with short timeouts for testing:
-# make run ARGS="5 100 50 50 50 3 100 fifo"
 # Run with default arguments:
 # make run ARGS="3 600 100 100 100 2 10 edf"
 run: $(NAME)
