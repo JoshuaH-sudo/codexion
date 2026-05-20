@@ -36,6 +36,12 @@ CONSISTENCY_RUNS	?= 10
 BATCHES		?= 20
 RUNS_PER_BATCH	?= 10
 MATRIX_RUNS	?= 5
+CODERS		?= 5
+COMPILE		?= 100
+DEBUG		?= 100
+REFACTOR	?= 100
+COOLDOWN	?= 10
+MARGIN		?= 15
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
@@ -77,6 +83,9 @@ consistency-batches: $(NAME)
 edge-matrix: $(NAME)
 	RUNS="$(MATRIX_RUNS)" bash ./scripts/edge_matrix.sh
 
+burnout-hint:
+	bash ./scripts/burnout_hint.sh $(CODERS) $(COMPILE) $(DEBUG) $(REFACTOR) $(COOLDOWN) $(MARGIN)
+
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
 	./$(STRESS_NAME)
@@ -84,4 +93,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint stress norm
