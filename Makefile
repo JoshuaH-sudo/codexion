@@ -30,7 +30,7 @@ SRCS		= src/main.c \
 # <number_of_compiles_required>
 # <dongle_cooldown>
 # <scheduler>
-ARGS		?= 5 800 200 200 200 3 50 fifo
+ARGS		?= 199 900 60 60 60 3 60 fifo
 CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
 CONSISTENCY_RUNS	?= 10
 BATCHES		?= 20
