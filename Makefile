@@ -63,11 +63,7 @@ fclean: clean
 re: fclean all
 
 # run with short timeouts for testing:
-# make run ARGS="5 100 50 50 50 3 100 fifo"
-# Run with default arguments:
-# make run ARGS="5 800 200 200 200 3 50 fifo"
-# Run with edf
-# make run ARGS="5 800 100 100 100 3 10 edf"
+# make run ARGS="199 900 60 60 60 3 60 fifo"
 run: $(NAME)
 	./$(NAME) $(ARGS)
 

@@ -6,6 +6,9 @@ usage() {
 	echo "  $0 <coders> <compile_ms> <debug_ms> <refactor_ms> <cooldown_ms> [margin_ms]"
 	echo "  $0 <coders> <burnout_ms> <compile_ms> <debug_ms> <refactor_ms> <required_compiles> <cooldown_ms> <scheduler>"
 	echo ""
+	echo "If margin is not provided, an automatic margin is used (60% of minimal burnout, floor 100 ms)."
+	echo "You can override it with [margin_ms] in hint mode or MARGIN=<ms> in project mode."
+	echo ""
 	echo "Examples:"
 	echo "  $0 5 100 100 100 10 15"
 	echo "  MARGIN=20 $0 5 800 100 100 100 3 10 edf"
@@ -18,16 +21,25 @@ is_non_negative_int() {
 	esac
 }
 
+MARGIN_MS=""
+MARGIN_SOURCE="auto"
+
 if [ "$#" -eq 5 ] || [ "$#" -eq 6 ]; then
 	CODERS="$1"
 	COMPILE_MS="$2"
 	DEBUG_MS="$3"
 	REFACTOR_MS="$4"
 	COOLDOWN_MS="$5"
-	MARGIN_MS="${6:-${MARGIN:-15}}"
+	if [ "$#" -eq 6 ]; then
+		MARGIN_MS="$6"
+		MARGIN_SOURCE="argument"
+	elif [ -n "${MARGIN:-}" ]; then
+		MARGIN_MS="$MARGIN"
+		MARGIN_SOURCE="environment"
+	fi
 	INPUT_MODE="hint"
-    REQUIRED_COMPILES="<required_compiles>"
-    SCHEDULER="<scheduler>"
+	REQUIRED_COMPILES="<required_compiles>"
+	SCHEDULER="<scheduler>"
 elif [ "$#" -eq 8 ]; then
 	# Project ARGS format: coders burnout compile debug refactor required cooldown scheduler
 	CODERS="$1"
@@ -37,20 +49,29 @@ elif [ "$#" -eq 8 ]; then
 	REQUIRED_COMPILES="$6"
 	COOLDOWN_MS="$7"
 	SCHEDULER="$8"
-	MARGIN_MS="${MARGIN:-15}"
+	if [ -n "${MARGIN:-}" ]; then
+		MARGIN_MS="$MARGIN"
+		MARGIN_SOURCE="environment"
+	fi
 	INPUT_MODE="project"
 else
 	usage
 	exit 1
 fi
 
-for value in "$CODERS" "$COMPILE_MS" "$DEBUG_MS" "$REFACTOR_MS" "$COOLDOWN_MS" "$MARGIN_MS"; do
+for value in "$CODERS" "$COMPILE_MS" "$DEBUG_MS" "$REFACTOR_MS" "$COOLDOWN_MS"; do
 	if ! is_non_negative_int "$value"; then
 		echo "Error: all parameters must be non-negative integers (milliseconds for times)."
 		usage
 		exit 1
 	fi
 done
+
+if [ -n "$MARGIN_MS" ] && ! is_non_negative_int "$MARGIN_MS"; then
+	echo "Error: margin must be a non-negative integer (milliseconds)."
+	usage
+	exit 1
+fi
 
 if [ "$CODERS" -eq 0 ]; then
 	echo "Error: <coders> must be greater than 0."
@@ -75,6 +96,15 @@ else
 	LIMITING_FACTOR="resource turns"
 fi
 
+if [ -z "$MARGIN_MS" ]; then
+	# Empirical default: contention-heavy runs need a broad buffer, not timer-level jitter.
+	MARGIN_MS=$((MINIMAL_BURNOUT * 60 / 100))
+	if [ "$MARGIN_MS" -lt 100 ]; then
+		MARGIN_MS=100
+	fi
+	MARGIN_SOURCE="auto"
+fi
+
 LOW_TEST="$MINIMAL_BURNOUT"
 if [ "$MINIMAL_BURNOUT" -gt "$MARGIN_MS" ]; then
 	LOW_TEST=$((MINIMAL_BURNOUT - MARGIN_MS))
@@ -89,7 +119,7 @@ echo "Full work cycle:     $FULL_WORK_CYCLE ms (compile + debug + refactor)"
 echo "Resource-turn bound: $RESOURCE_TURNS ms"
 echo "Minimal burnout:     $MINIMAL_BURNOUT ms"
 echo "Limiting factor:     $LIMITING_FACTOR"
-echo "Margin:              +/-$MARGIN_MS ms"
+echo "Margin:              +/-$MARGIN_MS ms ($MARGIN_SOURCE)"
 echo ""
 echo "Suggested burnout values to test:"
 echo "- near-fail (below): $LOW_TEST ms"
