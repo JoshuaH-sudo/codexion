@@ -2,8 +2,13 @@
 set -eu
 
 usage() {
-	echo "Usage: $0 <coders> <compile_ms> <debug_ms> <refactor_ms> <cooldown_ms> [margin_ms]"
-	echo "Example: $0 5 100 100 100 10 15"
+	echo "Usage:"
+	echo "  $0 <coders> <compile_ms> <debug_ms> <refactor_ms> <cooldown_ms> [margin_ms]"
+	echo "  $0 <coders> <burnout_ms> <compile_ms> <debug_ms> <refactor_ms> <required_compiles> <cooldown_ms> <scheduler>"
+	echo ""
+	echo "Examples:"
+	echo "  $0 5 100 100 100 10 15"
+	echo "  MARGIN=20 $0 5 800 100 100 100 3 10 edf"
 }
 
 is_non_negative_int() {
@@ -13,17 +18,27 @@ is_non_negative_int() {
 	esac
 }
 
-if [ "$#" -lt 5 ] || [ "$#" -gt 6 ]; then
+if [ "$#" -eq 5 ] || [ "$#" -eq 6 ]; then
+	CODERS="$1"
+	COMPILE_MS="$2"
+	DEBUG_MS="$3"
+	REFACTOR_MS="$4"
+	COOLDOWN_MS="$5"
+	MARGIN_MS="${6:-${MARGIN:-15}}"
+	INPUT_MODE="hint"
+elif [ "$#" -eq 8 ]; then
+	# Project ARGS format: coders burnout compile debug refactor required cooldown scheduler
+	CODERS="$1"
+	COMPILE_MS="$3"
+	DEBUG_MS="$4"
+	REFACTOR_MS="$5"
+	COOLDOWN_MS="$7"
+	MARGIN_MS="${MARGIN:-15}"
+	INPUT_MODE="project"
+else
 	usage
 	exit 1
 fi
-
-CODERS="$1"
-COMPILE_MS="$2"
-DEBUG_MS="$3"
-REFACTOR_MS="$4"
-COOLDOWN_MS="$5"
-MARGIN_MS="${6:-15}"
 
 for value in "$CODERS" "$COMPILE_MS" "$DEBUG_MS" "$REFACTOR_MS" "$COOLDOWN_MS" "$MARGIN_MS"; do
 	if ! is_non_negative_int "$value"; then
@@ -64,6 +79,7 @@ HIGH_TEST=$((MINIMAL_BURNOUT + MARGIN_MS))
 
 echo "Burnout timing recommendation"
 echo "============================"
+echo "Input mode:          $INPUT_MODE"
 echo "Coders:              $CODERS ($CASE_LABEL case)"
 echo "Full work cycle:     $FULL_WORK_CYCLE ms (compile + debug + refactor)"
 echo "Resource-turn bound: $RESOURCE_TURNS ms"

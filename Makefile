@@ -84,7 +84,7 @@ edge-matrix: $(NAME)
 	RUNS="$(MATRIX_RUNS)" bash ./scripts/edge_matrix.sh
 
 burnout-hint:
-	bash ./scripts/burnout_hint.sh $(CODERS) $(COMPILE) $(DEBUG) $(REFACTOR) $(COOLDOWN) $(MARGIN)
+	MARGIN="$(MARGIN)" bash ./scripts/burnout_hint.sh $(ARGS)
 
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
