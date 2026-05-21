@@ -81,6 +81,9 @@ edge-matrix: $(NAME)
 burnout-hint:
 	bash ./scripts/burnout_hint.sh $(ARGS)
 
+eval-checks: $(NAME)
+	bash ./scripts/eval_checks.sh
+
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
 	./$(STRESS_NAME)
@@ -88,4 +91,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint eval-checks stress norm
