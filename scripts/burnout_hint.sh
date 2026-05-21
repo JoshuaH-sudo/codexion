@@ -7,11 +7,9 @@ usage() {
 	echo "  $0 <coders> <burnout_ms> <compile_ms> <debug_ms> <refactor_ms> <required_compiles> <cooldown_ms> <scheduler>"
 	echo ""
 	echo "If margin is not provided, an automatic margin is used (60% of minimal burnout, floor 100 ms)."
-	echo "You can override it with [margin_ms] in hint mode or MARGIN=<ms> in project mode."
 	echo ""
 	echo "Examples:"
 	echo "  $0 5 100 100 100 10 15"
-	echo "  MARGIN=20 $0 5 800 100 100 100 3 10 edf"
 }
 
 is_non_negative_int() {
@@ -22,7 +20,6 @@ is_non_negative_int() {
 }
 
 MARGIN_MS=""
-MARGIN_SOURCE="auto"
 
 if [ "$#" -eq 5 ] || [ "$#" -eq 6 ]; then
 	CODERS="$1"
@@ -30,13 +27,6 @@ if [ "$#" -eq 5 ] || [ "$#" -eq 6 ]; then
 	DEBUG_MS="$3"
 	REFACTOR_MS="$4"
 	COOLDOWN_MS="$5"
-	if [ "$#" -eq 6 ]; then
-		MARGIN_MS="$6"
-		MARGIN_SOURCE="argument"
-	elif [ -n "${MARGIN:-}" ]; then
-		MARGIN_MS="$MARGIN"
-		MARGIN_SOURCE="environment"
-	fi
 	INPUT_MODE="hint"
 	REQUIRED_COMPILES="<required_compiles>"
 	SCHEDULER="<scheduler>"
@@ -49,10 +39,6 @@ elif [ "$#" -eq 8 ]; then
 	REQUIRED_COMPILES="$6"
 	COOLDOWN_MS="$7"
 	SCHEDULER="$8"
-	if [ -n "${MARGIN:-}" ]; then
-		MARGIN_MS="$MARGIN"
-		MARGIN_SOURCE="environment"
-	fi
 	INPUT_MODE="project"
 else
 	usage
@@ -96,13 +82,10 @@ else
 	LIMITING_FACTOR="resource turns"
 fi
 
-if [ -z "$MARGIN_MS" ]; then
-	# Empirical default: contention-heavy runs need a broad buffer, not timer-level jitter.
-	MARGIN_MS=$((MINIMAL_BURNOUT * 60 / 100))
-	if [ "$MARGIN_MS" -lt 100 ]; then
-		MARGIN_MS=100
-	fi
-	MARGIN_SOURCE="auto"
+# Empirical default: contention-heavy runs need a broad buffer, not timer-level jitter.
+MARGIN_MS=$((MINIMAL_BURNOUT * 60 / 100))
+if [ "$MARGIN_MS" -lt 100 ]; then
+	MARGIN_MS=100
 fi
 
 LOW_TEST="$MINIMAL_BURNOUT"
@@ -119,13 +102,11 @@ echo "Full work cycle:     $FULL_WORK_CYCLE ms (compile + debug + refactor)"
 echo "Resource-turn bound: $RESOURCE_TURNS ms"
 echo "Minimal burnout:     $MINIMAL_BURNOUT ms"
 echo "Limiting factor:     $LIMITING_FACTOR"
-echo "Margin:              +/-$MARGIN_MS ms ($MARGIN_SOURCE)"
+echo "Margin:              +/-$MARGIN_MS ms"
 echo ""
 echo "Suggested burnout values to test:"
-echo "- near-fail (below): $LOW_TEST ms"
-echo "- threshold:         $MINIMAL_BURNOUT ms"
-echo "- near-pass (above): $HIGH_TEST ms"
+echo "- minimal:             $MINIMAL_BURNOUT ms"
+echo "- likely-pass (above): $HIGH_TEST ms"
 echo ""
 echo "Copy/paste commands:"
-echo "- Suggested max (near-pass): make run ARGS=\"$CODERS $HIGH_TEST $COMPILE_MS $DEBUG_MS $REFACTOR_MS $REQUIRED_COMPILES $COOLDOWN_MS $SCHEDULER\""
-echo "- Threshold:                 make run ARGS=\"$CODERS $MINIMAL_BURNOUT $COMPILE_MS $DEBUG_MS $REFACTOR_MS $REQUIRED_COMPILES $COOLDOWN_MS $SCHEDULER\""
+echo "- Suggested threshold: make run ARGS=\"$CODERS $HIGH_TEST $COMPILE_MS $DEBUG_MS $REFACTOR_MS $REQUIRED_COMPILES $COOLDOWN_MS $SCHEDULER\""

@@ -41,7 +41,6 @@ COMPILE		?= 100
 DEBUG		?= 100
 REFACTOR	?= 100
 COOLDOWN	?= 10
-MARGIN		?=
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
@@ -80,7 +79,7 @@ edge-matrix: $(NAME)
 	RUNS="$(MATRIX_RUNS)" bash ./scripts/edge_matrix.sh
 
 burnout-hint:
-	MARGIN="$(MARGIN)" bash ./scripts/burnout_hint.sh $(ARGS)
+	bash ./scripts/burnout_hint.sh $(ARGS)
 
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
