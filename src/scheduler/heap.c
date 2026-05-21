@@ -6,11 +6,16 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/10 14:40:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/18 16:16:16 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 18:02:03 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+int	scheduler_is_empty(t_heap *heap)
+{
+	return (heap->size == 0);
+}
 
 void	swap_heap_nodes(t_job *left_node, t_job *right_node)
 {

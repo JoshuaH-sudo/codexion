@@ -56,9 +56,12 @@ typedef struct s_args
 typedef struct s_dongle
 {
 	int					id;
-	pthread_mutex_t		mutex;
+	int					held;
+	long				next_seq_no;
 	struct timeval		last_used_time;
-	pthread_cond_t		cooldown_cond;
+	pthread_mutex_t		sched_mutex;
+	pthread_cond_t		sched_cond;
+	t_heap				queue;
 }						t_dongle;
 
 typedef struct s_coder
@@ -77,21 +80,17 @@ typedef struct s_context
 	t_args				args;
 	t_coder				*coders;
 	t_dongle			*dongles;
-	t_heap				scheduler_heap;
 	pthread_t			monitor_thread;
 	pthread_mutex_t		state_mutex;
 	pthread_mutex_t		log_mutex;
-	pthread_mutex_t		scheduler_mutex;
-	pthread_cond_t		scheduler_cond;
 	int					simulation_over;
-	long				next_seq_no;
 	struct timeval		start_time;
 }						t_context;
 
 int						handle_args(int argc, char **argv, t_args *args);
 int						init_context(t_context *context, t_args *args);
 void					destroy_context(t_context *context);
-int						context_init_scheduler_heap(t_context *context);
+t_policy				context_get_policy(t_context *context);
 void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
@@ -115,9 +114,11 @@ int						scheduler_push_job(t_heap *heap, t_job job);
 int						scheduler_pop_job(t_heap *heap, t_job *out);
 int						scheduler_peek_job(t_heap *heap, t_job *out);
 int						scheduler_is_empty(t_heap *heap);
-void					scheduler_request_slot(t_context *context,
-							int coder_id, long deadline_ms);
-int						scheduler_wait_turn(t_context *context, int coder_id);
+void					dongle_request_access(t_dongle *dongle,
+							t_context *ctx, int coder_id, long deadline_ms);
+int						dongle_wait_access(t_dongle *dongle, t_context *ctx,
+							int coder_id, int cooldown_ms);
+void					dongle_release_access(t_dongle *dongle);
 void					swap_heap_nodes(t_job *left_node,
 							t_job *right_node);
 int						job_has_higher_priority(const t_job *candidate,

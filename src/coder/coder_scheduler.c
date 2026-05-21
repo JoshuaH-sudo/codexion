@@ -28,15 +28,7 @@ long	coder_deadline_ms(t_coder *coder)
 
 int	coder_scheduler_enter_compile_slot(t_coder *coder)
 {
-	t_context	*ctx;
-	long		deadline;
-
-	ctx = coder->context;
 	if (coder_should_stop(coder))
 		return (0);
-	deadline = coder_deadline_ms(coder);
-	scheduler_request_slot(ctx, coder->id, deadline);
-	if (!scheduler_wait_turn(ctx, coder->id))
-		return (0);
-	return (!coder_should_stop(coder));
+	return (1);
 }

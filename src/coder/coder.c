@@ -36,27 +36,38 @@ static int	run_cycle(t_coder *coder, int first, int second)
 	return (mark_compile_done(coder), 1);
 }
 
-void	*coder_routine(void *arg)
+static int	do_compile(t_coder *coder)
 {
-	t_coder	*coder;
 	int		first;
 	int		second;
 
+	first = coder->left_dongle;
+	second = coder->right_dongle;
+	if (first > second)
+	{
+		first = coder->right_dongle;
+		second = coder->left_dongle;
+	}
+	if (!coder_lock_dongles(coder, first, second))
+		return (0);
+	return (run_cycle(coder, first, second));
+}
+
+void	*coder_routine(void *arg)
+{
+	t_coder	*coder;
+	int		step;
+
 	coder = (t_coder *)arg;
+	step = coder->context->args.time_to_compile
+		+ coder->context->args.dongle_cooldown;
+	if (coder->id % 2 == 0)
+		sleep_with_stop(coder, step);
 	while (!coder_should_stop(coder))
 	{
 		if (!coder_scheduler_enter_compile_slot(coder))
 			break ;
-		first = coder->left_dongle;
-		second = coder->right_dongle;
-		if (first > second)
-		{
-			first = coder->right_dongle;
-			second = coder->left_dongle;
-		}
-		if (!coder_lock_dongles(coder, first, second))
-			break ;
-		if (!run_cycle(coder, first, second))
+		if (!do_compile(coder))
 			break ;
 	}
 	return (NULL);

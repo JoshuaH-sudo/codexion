@@ -9,6 +9,7 @@ SRCS		= src/main.c \
 			src/parsing/args.c \
 			src/core/context.c \
 			src/core/context_scheduler.c \
+			src/core/context_destroy.c \
 			src/coder/coder.c \
 			src/coder/coder_dongles.c \
 			src/coder/coder_scheduler.c \
@@ -81,6 +82,11 @@ edge-matrix: $(NAME)
 burnout-hint:
 	bash ./scripts/burnout_hint.sh $(ARGS)
 
+# compute burnout from equation using current ARGS layout:
+# ARGS = coders burnout compile debug refactor compiles cooldown scheduler
+burnout-calc:
+	@set -- $(ARGS); bash ./scripts/burnout_calc.sh "$$1" "$$3" "$$4" "$$5" "$$6" "$$7"
+
 eval-checks: $(NAME)
 	bash ./scripts/eval_checks.sh
 
@@ -91,4 +97,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint eval-checks stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint burnout-calc eval-checks stress norm
