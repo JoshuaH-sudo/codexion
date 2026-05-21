@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 16:45:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/21 16:16:13 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 17:05:27 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,33 +43,23 @@ static int	try_lock_ready(t_dongle *dongle, int cooldown_ms, long *wait_ms)
 	return (1);
 }
 
-static int	handle_locked_first_dongle(t_coder *coder,
-		t_dongle *first_dongle, t_dongle *second_dongle, long *wait_ms)
+static int	try_lock_pair(t_coder *coder, t_dongle *first_dongle,
+		t_dongle *second_dongle, long *wait_ms)
 {
-	log_message(coder, "has taken a dongle.");
+	if (!try_lock_ready(first_dongle, coder->context->args.dongle_cooldown,
+			wait_ms))
+		return (0);
 	if (first_dongle == second_dongle)
+		return (log_message(coder, "has taken a dongle."), -1);
+	if (!try_lock_ready(second_dongle, coder->context->args.dongle_cooldown,
+			wait_ms))
 	{
-		while (!coder_should_stop(coder))
-			usleep(1000);
 		pthread_mutex_unlock(&first_dongle->mutex);
 		return (0);
 	}
-	while (!coder_should_stop(coder))
-	{
-		*wait_ms = 1;
-		if (try_lock_ready(second_dongle,
-				coder->context->args.dongle_cooldown, wait_ms))
-		{
-			log_message(coder, "has taken a dongle.");
-			if (!coder_should_stop(coder))
-				return (1);
-			pthread_mutex_unlock(&second_dongle->mutex);
-			break ;
-		}
-		usleep(*wait_ms * 1000);
-	}
-	pthread_mutex_unlock(&first_dongle->mutex);
-	return (0);
+	log_message(coder, "has taken a dongle.");
+	log_message(coder, "has taken a dongle.");
+	return (1);
 }
 
 int	coder_lock_dongles(t_coder *coder, int first, int second)
@@ -77,18 +67,24 @@ int	coder_lock_dongles(t_coder *coder, int first, int second)
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 	long		wait_ms;
+	int			status;
 
 	first_dongle = &coder->context->dongles[first];
 	second_dongle = &coder->context->dongles[second];
 	while (!coder_should_stop(coder))
 	{
 		wait_ms = 1;
-		if (!try_lock_ready(first_dongle, coder->context->args.dongle_cooldown,
-				&wait_ms))
-			usleep(wait_ms * 1000);
-		else if (handle_locked_first_dongle(coder, first_dongle,
-				second_dongle, &wait_ms))
+		status = try_lock_pair(coder, first_dongle, second_dongle, &wait_ms);
+		if (status == 1)
 			return (1);
+		if (status == -1)
+		{
+			while (!coder_should_stop(coder))
+				usleep(1000);
+			pthread_mutex_unlock(&first_dongle->mutex);
+			return (0);
+		}
+		usleep(wait_ms * 1000);
 	}
 	return (0);
 }
