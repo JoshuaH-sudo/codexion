@@ -45,39 +45,58 @@ static long	cooldown_remaining(t_dongle *dongle, int cooldown_ms)
 	return (cooldown_ms - elapsed_ms);
 }
 
+static void	build_timespec(struct timespec *ts, long remaining_ms)
+{
+	struct timeval	now;
+
+	gettimeofday(&now, NULL);
+	ts->tv_sec = now.tv_sec + remaining_ms / 1000;
+	ts->tv_nsec = (long)now.tv_usec * 1000 + (remaining_ms % 1000) * 1000000;
+	if (ts->tv_nsec >= 1000000000)
+	{
+		ts->tv_sec++;
+		ts->tv_nsec -= 1000000000;
+	}
+}
+
+static int	try_grant_access(t_dongle *dongle, int coder_id,
+	int cooldown_ms, long *remaining_out)
+{
+	t_job	top;
+
+	if (!scheduler_peek_job(&dongle->queue, &top)
+		|| top.coder_id != coder_id || dongle->held)
+		return (-1);
+	*remaining_out = cooldown_remaining(dongle, cooldown_ms);
+	if (*remaining_out > 0)
+		return (0);
+	scheduler_pop_job(&dongle->queue, &top);
+	dongle->held = 1;
+	return (1);
+}
+
 int	dongle_wait_access(t_dongle *dongle, t_context *ctx,
 	int coder_id, int cooldown_ms)
 {
-	t_job			top;
-	long			remaining;
 	struct timespec	ts;
-	struct timeval	now;
+	long			remaining;
+	int				status;
 
 	pthread_mutex_lock(&dongle->sched_mutex);
 	while (!ctx->simulation_over)
 	{
-		if (!scheduler_peek_job(&dongle->queue, &top)
-			|| top.coder_id != coder_id || dongle->held)
+		status = try_grant_access(dongle, coder_id, cooldown_ms, &remaining);
+		if (status == 1)
+		{
+			pthread_mutex_unlock(&dongle->sched_mutex);
+			return (1);
+		}
+		if (status == -1)
 		{
 			pthread_cond_wait(&dongle->sched_cond, &dongle->sched_mutex);
 			continue ;
 		}
-		remaining = cooldown_remaining(dongle, cooldown_ms);
-		if (remaining <= 0)
-		{
-			scheduler_pop_job(&dongle->queue, &top);
-			dongle->held = 1;
-			pthread_mutex_unlock(&dongle->sched_mutex);
-			return (1);
-		}
-		gettimeofday(&now, NULL);
-		ts.tv_sec = now.tv_sec + remaining / 1000;
-		ts.tv_nsec = (long)now.tv_usec * 1000 + (remaining % 1000) * 1000000;
-		if (ts.tv_nsec >= 1000000000)
-		{
-			ts.tv_sec++;
-			ts.tv_nsec -= 1000000000;
-		}
+		build_timespec(&ts, remaining);
 		pthread_cond_timedwait(&dongle->sched_cond, &dongle->sched_mutex, &ts);
 	}
 	pthread_mutex_unlock(&dongle->sched_mutex);

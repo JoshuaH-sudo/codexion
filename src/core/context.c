@@ -26,6 +26,30 @@ static void	destroy_dongles(t_context *context, int count)
 	}
 }
 
+static int	init_single_dongle(t_context *context, int i, t_policy policy)
+{
+	context->dongles[i].id = i + 1;
+	context->dongles[i].held = 0;
+	context->dongles[i].next_seq_no = 0;
+	context->dongles[i].last_used_time.tv_sec = 0;
+	context->dongles[i].last_used_time.tv_usec = 0;
+	if (!scheduler_init(&context->dongles[i].queue,
+			context->args.number_of_coders, policy))
+		return (0);
+	if (pthread_mutex_init(&context->dongles[i].sched_mutex, NULL) != 0)
+	{
+		scheduler_destroy(&context->dongles[i].queue);
+		return (0);
+	}
+	if (pthread_cond_init(&context->dongles[i].sched_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&context->dongles[i].sched_mutex);
+		scheduler_destroy(&context->dongles[i].queue);
+		return (0);
+	}
+	return (1);
+}
+
 static int	init_dongles(t_context *context)
 {
 	t_policy	policy;
@@ -35,25 +59,8 @@ static int	init_dongles(t_context *context)
 	i = 0;
 	while (i < context->args.number_of_coders)
 	{
-		context->dongles[i].id = i + 1;
-		context->dongles[i].held = 0;
-		context->dongles[i].next_seq_no = 0;
-		context->dongles[i].last_used_time.tv_sec = 0;
-		context->dongles[i].last_used_time.tv_usec = 0;
-		if (!scheduler_init(&context->dongles[i].queue,
-				context->args.number_of_coders, policy))
+		if (!init_single_dongle(context, i, policy))
 			return (destroy_dongles(context, i), 0);
-		if (pthread_mutex_init(&context->dongles[i].sched_mutex, NULL) != 0)
-		{
-			scheduler_destroy(&context->dongles[i].queue);
-			return (destroy_dongles(context, i), 0);
-		}
-		if (pthread_cond_init(&context->dongles[i].sched_cond, NULL) != 0)
-		{
-			pthread_mutex_destroy(&context->dongles[i].sched_mutex);
-			scheduler_destroy(&context->dongles[i].queue);
-			return (destroy_dongles(context, i), 0);
-		}
 		i++;
 	}
 	return (1);
