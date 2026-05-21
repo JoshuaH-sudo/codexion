@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:41 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/18 17:23:49 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/18 19:06:26 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 static int	run_cycle(t_coder *coder, int first, int second)
 {
-	mark_compile_start(coder);
 	if (coder_should_stop(coder))
 		return (coder_unlock_dongles(coder, first, second), 0);
+	mark_compile_start(coder);
 	log_message(coder, "is compiling with dongles.");
 	sleep_with_stop(coder, coder->context->args.time_to_compile);
 	if (coder_should_stop(coder))

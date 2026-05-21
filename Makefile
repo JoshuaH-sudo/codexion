@@ -30,7 +30,17 @@ SRCS		= src/main.c \
 # <number_of_compiles_required>
 # <dongle_cooldown>
 # <scheduler>
-ARGS		?= 199 1200 60 60 60 5 60 fifo
+ARGS		?= 199 576 60 60 60 3 60 fifo
+CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
+CONSISTENCY_RUNS	?= 10
+BATCHES		?= 20
+RUNS_PER_BATCH	?= 10
+MATRIX_RUNS	?= 5
+CODERS		?= 5
+COMPILE		?= 100
+DEBUG		?= 100
+REFACTOR	?= 100
+COOLDOWN	?= 10
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
@@ -51,13 +61,28 @@ fclean: clean
 
 re: fclean all
 
-# Run with default arguments:
-# make run ARGS="3 600 100 100 100 2 10 edf"
+# run with short timeouts for testing:
+# make run ARGS="199 576 60 60 60 3 60 fifo"
 run: $(NAME)
 	./$(NAME) $(ARGS)
 
 smoke: $(NAME)
 	./scripts/smoke_tests.sh
+
+consistency: $(NAME)
+	ARGS="$(CONSISTENCY_ARGS)" RUNS="$(CONSISTENCY_RUNS)" ./scripts/consistency_test.sh
+
+consistency-batches: $(NAME)
+	ARGS="$(CONSISTENCY_ARGS)" ./scripts/consistency_batches.sh $(BATCHES) $(RUNS_PER_BATCH)
+
+edge-matrix: $(NAME)
+	RUNS="$(MATRIX_RUNS)" bash ./scripts/edge_matrix.sh
+
+burnout-hint:
+	bash ./scripts/burnout_hint.sh $(ARGS)
+
+eval-checks: $(NAME)
+	bash ./scripts/eval_checks.sh
 
 stress:
 	$(CC) $(CFLAGS) tests/stress_scheduler.c src/scheduler/scheduler.c src/scheduler/scheduler_sync.c src/scheduler/heap.c $(INCLUDES) -o $(STRESS_NAME)
@@ -66,4 +91,4 @@ stress:
 norm:
 	norminette src include
 
-.PHONY: all clean fclean re run smoke stress norm
+.PHONY: all clean fclean re run smoke consistency consistency-batches edge-matrix burnout-hint eval-checks stress norm

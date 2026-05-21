@@ -47,6 +47,12 @@ make re       # fclean + all
 
 All arguments are **mandatory**. Invalid input (non-integer values, bad scheduler) is rejected.
 
+`make run` uses this default argument set unless overridden:
+
+```bash
+5 800 200 200 200 3 0 fifo
+```
+
 | Argument | Type | Description |
 |---|---|---|
 | `number_of_coders` | int ≥ 1 | Number of coders and dongles |
@@ -61,23 +67,24 @@ All arguments are **mandatory**. Invalid input (non-integer values, bad schedule
 ### Usage Examples
 
 ```bash
-# Balanced baseline: expected to complete without burnout
-./codexion 5 800 200 200 200 3 0 fifo
+# Balanced baseline: minimal burnout ~= 600 ms, using 1000 ms -> expected PASS
+./codexion 5 1000 200 200 200 3 0 fifo
 
-# Same baseline with EDF scheduling and cooldown
-./codexion 4 600 150 150 150 5 50 edf
+# EDF + cooldown: minimal burnout ~= 450 ms, using 750 ms -> expected PASS
+./codexion 4 750 150 150 150 5 50 edf
 
 # Single-coder edge case (left dongle == right dongle)
+# always burns out because one coder can never acquire two distinct dongles.
 ./codexion 1 500 200 100 100 2 0 fifo
 
-# Contention-heavy case: likely burnout
-./codexion 5 800 200 200 200 3 50 fifo
+# Contention-heavy fifo: minimal burnout ~= 750 ms, using 700 ms -> expected BURNOUT
+./codexion 5 700 200 200 200 3 50 fifo
 
-# EDF stress case for liveness behavior under feasible params
-./codexion 5 1000 200 200 200 10 50 edf
+# EDF stress case: minimal burnout ~= 750 ms, using 1200 ms -> expected PASS
+./codexion 5 1200 200 200 200 10 50 edf
 
-# Fast cycle with minimal cooldown
-./codexion 4 700 120 120 120 3 1 fifo
+# Fast cycle with low cooldown: minimal burnout ~= 360 ms, using 600 ms -> expected PASS
+./codexion 4 600 120 120 120 3 1 fifo
 ```
 
 ### Expected Output Format
@@ -119,6 +126,7 @@ After scheduler admission, the coder locks dongles in deterministic index order 
 - Each dongle has its own mutex.
 - Cooldown is enforced from `last_used_time` in 1 ms steps until the cooldown window expires.
 - A single-coder case (`left == right`) is handled by taking only one dongle.
+- Since compile requires two dongles, a single coder can never start compile and will always burn out after `time_to_burnout`.
 
 ### Burnout Detection
 
@@ -136,6 +144,17 @@ All output is serialized under `log_mutex`. After stop, non-burnout logs are sup
 ---
 
 ## Blocking Cases Handled
+
+### Single-Coder Behavior
+
+With `number_of_coders = 1`, there is only one dongle in the system.
+
+- The coder can acquire that single dongle.
+- The coder cannot acquire a second distinct dongle required for compile.
+- No compile cycle can begin, so `last_compile_time` is never refreshed by a compile start.
+- The monitor eventually detects elapsed time >= `time_to_burnout` and logs `burned out`.
+
+This burnout is expected and considered correct behavior for the one-coder topology.
 
 ### Deadlock Prevention and Coffman's Conditions
 
@@ -240,4 +259,3 @@ threads and the monitor.
 ### Deadlock Theory
 - [Coffman Conditions — Wikipedia](https://en.wikipedia.org/wiki/Deadlock_(computer_science))
 - [Operating System Concepts — Silberschatz, Galvin, Gagne (Chapter 7: Deadlocks)](https://www.os-book.com/)
-

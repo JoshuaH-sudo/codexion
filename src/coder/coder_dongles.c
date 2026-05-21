@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 16:45:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/18 17:25:04 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 17:16:18 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,16 +43,21 @@ static int	try_lock_ready(t_dongle *dongle, int cooldown_ms, long *wait_ms)
 	return (1);
 }
 
-static int	lock_both_dongles(t_coder *coder, t_dongle *first_dongle,
+static int	try_lock_pair(t_coder *coder, t_dongle *first_dongle,
 		t_dongle *second_dongle, long *wait_ms)
 {
+	if (!try_lock_ready(first_dongle, coder->context->args.dongle_cooldown,
+			wait_ms))
+		return (0);
+	log_message(coder, "has taken a dongle.");
+	if (first_dongle == second_dongle)
+		return (-1);
 	if (!try_lock_ready(second_dongle, coder->context->args.dongle_cooldown,
 			wait_ms))
 	{
 		pthread_mutex_unlock(&first_dongle->mutex);
 		return (0);
 	}
-	log_message(coder, "has taken a dongle.");
 	log_message(coder, "has taken a dongle.");
 	return (1);
 }
@@ -62,22 +67,24 @@ int	coder_lock_dongles(t_coder *coder, int first, int second)
 	t_dongle	*first_dongle;
 	t_dongle	*second_dongle;
 	long		wait_ms;
+	int			status;
 
 	first_dongle = &coder->context->dongles[first];
 	second_dongle = &coder->context->dongles[second];
 	while (!coder_should_stop(coder))
 	{
 		wait_ms = 1;
-		if (!try_lock_ready(first_dongle, coder->context->args.dongle_cooldown,
-				&wait_ms))
-			usleep(wait_ms * 1000);
-		else if (first == second)
-			return (log_message(coder, "has taken a dongle."), 1);
-		else if (lock_both_dongles(coder, first_dongle,
-				second_dongle, &wait_ms))
+		status = try_lock_pair(coder, first_dongle, second_dongle, &wait_ms);
+		if (status == 1)
 			return (1);
-		else
-			usleep(wait_ms * 1000);
+		if (status == -1)
+		{
+			while (!coder_should_stop(coder))
+				usleep(1000);
+			pthread_mutex_unlock(&first_dongle->mutex);
+			return (0);
+		}
+		usleep(wait_ms * 1000);
 	}
 	return (0);
 }

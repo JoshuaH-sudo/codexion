@@ -3,8 +3,17 @@ set -eu
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="$ROOT_DIR/codexion"
-RUNS=10
-ARGS=(10 500 80 80 80 3 10 edf)
+RUNS="${RUNS:-10}"
+
+if [ "$#" -ge 1 ]; then
+	RUNS="$1"
+	shift
+fi
+if [ "$#" -gt 0 ]; then
+	ARGS=("$@")
+else
+	read -r -a ARGS <<< "${ARGS:-10 500 80 80 80 3 10 edf}"
+fi
 
 if [ ! -x "$BIN" ]; then
 	echo "Building codexion..."
