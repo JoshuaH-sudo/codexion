@@ -18,3 +18,19 @@ t_policy	context_get_policy(t_context *context)
 		return (POLICY_EDF);
 	return (POLICY_FIFO);
 }
+
+int	context_compute_table_max(t_context *ctx)
+{
+	int	step;
+	int	tmax;
+
+	step = ctx->args.time_to_compile + ctx->args.dongle_cooldown;
+	if (step <= 0)
+		return (ctx->args.number_of_coders);
+	tmax = ctx->args.time_to_burnout / step;
+	if (tmax < 1)
+		tmax = 1;
+	if (tmax > ctx->args.number_of_coders)
+		return (ctx->args.number_of_coders);
+	return (tmax);
+}

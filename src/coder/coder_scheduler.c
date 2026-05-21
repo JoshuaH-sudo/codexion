@@ -28,5 +28,29 @@ long	coder_deadline_ms(t_coder *coder)
 
 int	coder_scheduler_enter_compile_slot(t_coder *coder)
 {
-	return (!coder_should_stop(coder));
+	t_context	*ctx;
+
+	ctx = coder->context;
+	pthread_mutex_lock(&ctx->table_mutex);
+	while (ctx->table_count >= ctx->table_max && !ctx->simulation_over)
+		pthread_cond_wait(&ctx->table_cond, &ctx->table_mutex);
+	if (ctx->simulation_over)
+	{
+		pthread_mutex_unlock(&ctx->table_mutex);
+		return (0);
+	}
+	ctx->table_count++;
+	pthread_mutex_unlock(&ctx->table_mutex);
+	return (1);
+}
+
+void	coder_scheduler_leave_compile_slot(t_coder *coder)
+{
+	t_context	*ctx;
+
+	ctx = coder->context;
+	pthread_mutex_lock(&ctx->table_mutex);
+	ctx->table_count--;
+	pthread_cond_signal(&ctx->table_cond);
+	pthread_mutex_unlock(&ctx->table_mutex);
 }

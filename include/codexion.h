@@ -85,6 +85,10 @@ typedef struct s_context
 	pthread_mutex_t		log_mutex;
 	int					simulation_over;
 	struct timeval		start_time;
+	int					table_count;
+	int					table_max;
+	pthread_mutex_t		table_mutex;
+	pthread_cond_t		table_cond;
 }						t_context;
 
 int						handle_args(int argc, char **argv, t_args *args);
@@ -95,6 +99,8 @@ void					*coder_routine(void *arg);
 void					*monitor_routine(void *arg);
 void					context_init_coders(t_context *context);
 int						coder_scheduler_enter_compile_slot(t_coder *coder);
+void					coder_scheduler_leave_compile_slot(t_coder *coder);
+int						context_compute_table_max(t_context *ctx);
 int						coder_lock_dongles(t_coder *coder, int first,
 							int second);
 void					coder_unlock_dongles(t_coder *coder, int first,
