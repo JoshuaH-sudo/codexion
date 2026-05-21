@@ -64,6 +64,33 @@ All arguments are **mandatory**. Invalid input (non-integer values, bad schedule
 | `dongle_cooldown` | ms | Cooldown after a dongle is released before it can be reacquired |
 | `scheduler` | string | `fifo` or `edf` |
 
+### Burnout Time Calculation
+
+Use the following equation to compute a baseline burnout value:
+
+$$
+    ext{time\_to\_burnout} = \text{number\_of\_coders} \times (\text{time\_to\_refactor} + \text{time\_to\_debug} + \text{time\_to\_compile} + \text{dongle\_cooldown}) \times \text{number\_of\_compiles\_required}
+$$
+
+For `./codexion N B C D R K X scheduler`:
+- `N` = number of coders
+- `C` = time to compile
+- `D` = time to debug
+- `R` = time to refactor
+- `K` = number of compiles required
+- `X` = dongle cooldown
+
+Then compute:
+- `cycle = R + D + C + X`
+- `B = N * cycle * K`
+
+Worked example:
+- `N = 199`, `C = 60`, `D = 60`, `R = 60`, `K = 3`, `X = 60`
+- `cycle = 60 + 60 + 60 + 60 = 240`
+- `B = 199 * 240 * 3 = 143280`
+
+So `time_to_burnout = 143280 ms`.
+
 ### Usage Examples
 
 ```bash
