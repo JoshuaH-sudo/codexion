@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 16:45:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/21 16:07:14 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 16:16:13 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,17 +54,20 @@ static int	handle_locked_first_dongle(t_coder *coder,
 		pthread_mutex_unlock(&first_dongle->mutex);
 		return (0);
 	}
-	if (!try_lock_ready(second_dongle, coder->context->args.dongle_cooldown,
-			wait_ms))
+	while (!coder_should_stop(coder))
 	{
-		pthread_mutex_unlock(&first_dongle->mutex);
+		*wait_ms = 1;
+		if (try_lock_ready(second_dongle,
+				coder->context->args.dongle_cooldown, wait_ms))
+		{
+			log_message(coder, "has taken a dongle.");
+			if (!coder_should_stop(coder))
+				return (1);
+			pthread_mutex_unlock(&second_dongle->mutex);
+			break ;
+		}
 		usleep(*wait_ms * 1000);
-		return (0);
 	}
-	log_message(coder, "has taken a dongle.");
-	if (!coder_should_stop(coder))
-		return (1);
-	pthread_mutex_unlock(&second_dongle->mutex);
 	pthread_mutex_unlock(&first_dongle->mutex);
 	return (0);
 }
