@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BIN="$ROOT_DIR/codexion"
@@ -51,8 +51,14 @@ for entry in "${cases[@]}"; do
 $arg_set
 EOF
 	for _ in $(seq 1 "$RUNS"); do
-		if "$BIN" $arg_set 2>&1 | grep -q "burned out"; then
-			burnouts=$((burnouts + 1))
+		if output=$("$BIN" $arg_set 2>&1); then
+			if printf '%s\n' "$output" | grep -q "burned out"; then
+				burnouts=$((burnouts + 1))
+			fi
+		else
+			echo "codexion execution failed for args: $arg_set" >&2
+			echo "$output" >&2
+			exit 1
 		fi
 	done
 	outcome="mismatch"

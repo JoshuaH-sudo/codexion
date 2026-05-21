@@ -47,6 +47,12 @@ make re       # fclean + all
 
 All arguments are **mandatory**. Invalid input (non-integer values, bad scheduler) is rejected.
 
+`make run` uses this default argument set unless overridden:
+
+```bash
+5 800 200 200 200 3 0 fifo
+```
+
 | Argument | Type | Description |
 |---|---|---|
 | `number_of_coders` | int ≥ 1 | Number of coders and dongles |
@@ -240,4 +246,3 @@ threads and the monitor.
 ### Deadlock Theory
 - [Coffman Conditions — Wikipedia](https://en.wikipedia.org/wiki/Deadlock_(computer_science))
 - [Operating System Concepts — Silberschatz, Galvin, Gagne (Chapter 7: Deadlocks)](https://www.os-book.com/)
-

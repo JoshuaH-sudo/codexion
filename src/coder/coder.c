@@ -16,6 +16,7 @@ static int	run_cycle(t_coder *coder, int first, int second)
 {
 	if (coder_should_stop(coder))
 		return (coder_unlock_dongles(coder, first, second), 0);
+	mark_compile_start(coder);
 	log_message(coder, "is compiling with dongles.");
 	sleep_with_stop(coder, coder->context->args.time_to_compile);
 	if (coder_should_stop(coder))

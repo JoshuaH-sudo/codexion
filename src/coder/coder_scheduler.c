@@ -38,6 +38,5 @@ int	coder_scheduler_enter_compile_slot(t_coder *coder)
 	scheduler_request_slot(ctx, coder->id, deadline);
 	if (!scheduler_wait_turn(ctx, coder->id))
 		return (0);
-	mark_compile_start(coder);
 	return (!coder_should_stop(coder));
 }
