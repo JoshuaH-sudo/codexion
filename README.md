@@ -67,24 +67,24 @@ All arguments are **mandatory**. Invalid input (non-integer values, bad schedule
 ### Usage Examples
 
 ```bash
-# Balanced baseline: expected to complete without burnout
-./codexion 5 800 200 200 200 3 0 fifo
+# Balanced baseline: minimal burnout ~= 600 ms, using 1000 ms -> expected PASS
+./codexion 5 1000 200 200 200 3 0 fifo
 
-# Same baseline with EDF scheduling and cooldown
-./codexion 4 600 150 150 150 5 50 edf
+# EDF + cooldown: minimal burnout ~= 450 ms, using 750 ms -> expected PASS
+./codexion 4 750 150 150 150 5 50 edf
 
 # Single-coder edge case (left dongle == right dongle)
-# Expected behavior: always burns out (cannot hold two distinct dongles)
+# always burns out because one coder can never acquire two distinct dongles.
 ./codexion 1 500 200 100 100 2 0 fifo
 
-# Contention-heavy case: likely burnout
-./codexion 5 800 200 200 200 3 50 fifo
+# Contention-heavy fifo: minimal burnout ~= 750 ms, using 700 ms -> expected BURNOUT
+./codexion 5 700 200 200 200 3 50 fifo
 
-# EDF stress case for liveness behavior under feasible params
-./codexion 5 1000 200 200 200 10 50 edf
+# EDF stress case: minimal burnout ~= 750 ms, using 1200 ms -> expected PASS
+./codexion 5 1200 200 200 200 10 50 edf
 
-# Fast cycle with minimal cooldown
-./codexion 4 700 120 120 120 3 1 fifo
+# Fast cycle with low cooldown: minimal burnout ~= 360 ms, using 600 ms -> expected PASS
+./codexion 4 600 120 120 120 3 1 fifo
 ```
 
 ### Expected Output Format
