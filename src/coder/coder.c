@@ -49,19 +49,20 @@ static int	do_compile(t_coder *coder)
 		second = coder->left_dongle;
 	}
 	if (!coder_lock_dongles(coder, first, second))
-	{
-		coder_scheduler_leave_compile_slot(coder);
 		return (0);
-	}
-	coder_scheduler_leave_compile_slot(coder);
 	return (run_cycle(coder, first, second));
 }
 
 void	*coder_routine(void *arg)
 {
 	t_coder	*coder;
+	int		step;
 
 	coder = (t_coder *)arg;
+	step = coder->context->args.time_to_compile
+		+ coder->context->args.dongle_cooldown;
+	if (coder->id % 2 == 0)
+		sleep_with_stop(coder, step);
 	while (!coder_should_stop(coder))
 	{
 		if (!coder_scheduler_enter_compile_slot(coder))

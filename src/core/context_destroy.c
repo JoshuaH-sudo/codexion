@@ -16,8 +16,6 @@ void	destroy_context(t_context *context)
 {
 	int	i;
 
-	pthread_cond_destroy(&context->table_cond);
-	pthread_mutex_destroy(&context->table_mutex);
 	pthread_mutex_destroy(&context->log_mutex);
 	pthread_mutex_destroy(&context->state_mutex);
 	i = 0;

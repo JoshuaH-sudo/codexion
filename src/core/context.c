@@ -66,32 +66,14 @@ static int	init_dongles(t_context *context)
 	return (1);
 }
 
-static int	init_table(t_context *context)
-{
-	context->table_count = 0;
-	context->table_max = context_compute_table_max(context);
-	if (pthread_mutex_init(&context->table_mutex, NULL) != 0)
-		return (0);
-	if (pthread_cond_init(&context->table_cond, NULL) != 0)
-	{
-		pthread_mutex_destroy(&context->table_mutex);
-		return (0);
-	}
-	return (1);
-}
-
 static int	init_state(t_context *context)
 {
 	context->monitor_thread = 0;
 	context->simulation_over = 0;
 	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
 		return (0);
-	if (!init_table(context))
-		return (pthread_mutex_destroy(&context->state_mutex), 0);
 	if (init_dongles(context) && init_log_mutex(context))
 		return (1);
-	pthread_cond_destroy(&context->table_cond);
-	pthread_mutex_destroy(&context->table_mutex);
 	pthread_mutex_destroy(&context->state_mutex);
 	return (0);
 }

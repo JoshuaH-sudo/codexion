@@ -71,9 +71,6 @@ void	context_set_over(t_context *context)
 	pthread_mutex_lock(&context->state_mutex);
 	context->simulation_over = 1;
 	pthread_mutex_unlock(&context->state_mutex);
-	pthread_mutex_lock(&context->table_mutex);
-	pthread_cond_broadcast(&context->table_cond);
-	pthread_mutex_unlock(&context->table_mutex);
 	i = 0;
 	while (i < context->args.number_of_coders)
 	{
