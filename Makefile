@@ -30,7 +30,7 @@ SRCS		= src/main.c \
 # <number_of_compiles_required>
 # <dongle_cooldown>
 # <scheduler>
-ARGS		?= 199 500 60 60 60 3 60 fifo
+ARGS		?= 199 576 60 60 60 3 60 fifo
 CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
 CONSISTENCY_RUNS	?= 10
 BATCHES		?= 20
@@ -62,7 +62,7 @@ fclean: clean
 re: fclean all
 
 # run with short timeouts for testing:
-# make run ARGS="199 900 60 60 60 3 60 fifo"
+# make run ARGS="199 576 60 60 60 3 60 fifo"
 run: $(NAME)
 	./$(NAME) $(ARGS)
 
