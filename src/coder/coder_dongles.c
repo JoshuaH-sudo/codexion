@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 16:45:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/21 17:05:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 17:16:18 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,15 +49,15 @@ static int	try_lock_pair(t_coder *coder, t_dongle *first_dongle,
 	if (!try_lock_ready(first_dongle, coder->context->args.dongle_cooldown,
 			wait_ms))
 		return (0);
+	log_message(coder, "has taken a dongle.");
 	if (first_dongle == second_dongle)
-		return (log_message(coder, "has taken a dongle."), -1);
+		return (-1);
 	if (!try_lock_ready(second_dongle, coder->context->args.dongle_cooldown,
 			wait_ms))
 	{
 		pthread_mutex_unlock(&first_dongle->mutex);
 		return (0);
 	}
-	log_message(coder, "has taken a dongle.");
 	log_message(coder, "has taken a dongle.");
 	return (1);
 }
