@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/09 15:55:30 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/11 14:48:27 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 18:02:04 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,13 +101,4 @@ int	init_context(t_context *context, t_args *args)
 	gettimeofday(&context->start_time, NULL);
 	context_init_coders(context);
 	return (1);
-}
-
-void	destroy_context(t_context *context)
-{
-	pthread_mutex_destroy(&context->log_mutex);
-	pthread_mutex_destroy(&context->state_mutex);
-	destroy_dongles(context, context->args.number_of_coders);
-	free(context->coders);
-	free(context->dongles);
 }

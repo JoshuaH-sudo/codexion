@@ -9,6 +9,7 @@ SRCS		= src/main.c \
 			src/parsing/args.c \
 			src/core/context.c \
 			src/core/context_scheduler.c \
+			src/core/context_destroy.c \
 			src/coder/coder.c \
 			src/coder/coder_dongles.c \
 			src/coder/coder_scheduler.c \

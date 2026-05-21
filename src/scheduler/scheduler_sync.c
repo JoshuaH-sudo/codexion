@@ -6,16 +6,11 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 13:07:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/21 17:03:35 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 18:02:02 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-int	scheduler_is_empty(t_heap *heap)
-{
-	return (heap->size == 0);
-}
 
 void	dongle_request_access(t_dongle *dongle, t_context *ctx,
 	int coder_id, long deadline_ms)
@@ -30,19 +25,6 @@ void	dongle_request_access(t_dongle *dongle, t_context *ctx,
 	pthread_cond_broadcast(&dongle->sched_cond);
 	pthread_mutex_unlock(&dongle->sched_mutex);
 	(void)ctx;
-}
-
-static long	cooldown_remaining(t_dongle *dongle, int cooldown_ms)
-{
-	struct timeval	now;
-	long			elapsed_ms;
-
-	gettimeofday(&now, NULL);
-	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
-		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
-	if (elapsed_ms >= cooldown_ms)
-		return (0);
-	return (cooldown_ms - elapsed_ms);
 }
 
 static void	build_timespec(struct timespec *ts, long remaining_ms)
@@ -62,12 +44,20 @@ static void	build_timespec(struct timespec *ts, long remaining_ms)
 static int	try_grant_access(t_dongle *dongle, int coder_id,
 	int cooldown_ms, long *remaining_out)
 {
-	t_job	top;
+	t_job			top;
+	long			elapsed_ms;
+	struct timeval	now;
 
 	if (!scheduler_peek_job(&dongle->queue, &top)
 		|| top.coder_id != coder_id || dongle->held)
 		return (-1);
-	*remaining_out = cooldown_remaining(dongle, cooldown_ms);
+	gettimeofday(&now, NULL);
+	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
+		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
+	if (elapsed_ms >= cooldown_ms)
+		*remaining_out = 0;
+	else
+		*remaining_out = cooldown_ms - elapsed_ms;
 	if (*remaining_out > 0)
 		return (0);
 	scheduler_pop_job(&dongle->queue, &top);
