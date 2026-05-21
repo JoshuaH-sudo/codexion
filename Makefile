@@ -30,7 +30,7 @@ SRCS		= src/main.c \
 # <number_of_compiles_required>
 # <dongle_cooldown>
 # <scheduler>
-ARGS		?= 5 900 60 60 60 3 60 fifo
+ARGS		?= 199 500 60 60 60 3 60 fifo
 CONSISTENCY_ARGS	?= 10 500 80 80 80 3 10 edf
 CONSISTENCY_RUNS	?= 10
 BATCHES		?= 20
@@ -41,7 +41,7 @@ COMPILE		?= 100
 DEBUG		?= 100
 REFACTOR	?= 100
 COOLDOWN	?= 10
-MARGIN		?= 15
+MARGIN		?=
 
 OBJS		= $(SRCS:src/%.c=obj/%.o)
 
