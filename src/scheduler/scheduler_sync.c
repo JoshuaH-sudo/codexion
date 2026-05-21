@@ -17,38 +17,78 @@ int	scheduler_is_empty(t_heap *heap)
 	return (heap->size == 0);
 }
 
-void	scheduler_request_slot(t_context *context, int coder_id,
-	long deadline_ms)
+void	dongle_request_access(t_dongle *dongle, t_context *ctx,
+	int coder_id, long deadline_ms)
 {
 	t_job	job;
 
-	pthread_mutex_lock(&context->scheduler_mutex);
+	pthread_mutex_lock(&dongle->sched_mutex);
 	job.coder_id = coder_id;
-	job.seq_no = context->next_seq_no++;
+	job.seq_no = dongle->next_seq_no++;
 	job.deadline_ms = deadline_ms;
-	scheduler_push_job(&context->scheduler_heap, job);
-	pthread_cond_broadcast(&context->scheduler_cond);
-	pthread_mutex_unlock(&context->scheduler_mutex);
+	scheduler_push_job(&dongle->queue, job);
+	pthread_cond_broadcast(&dongle->sched_cond);
+	pthread_mutex_unlock(&dongle->sched_mutex);
+	(void)ctx;
 }
 
-int	scheduler_wait_turn(t_context *context, int coder_id)
+static long	cooldown_remaining(t_dongle *dongle, int cooldown_ms)
 {
-	t_job	top;
+	struct timeval	now;
+	long			elapsed_ms;
 
-	pthread_mutex_lock(&context->scheduler_mutex);
-	while (!context->simulation_over)
+	gettimeofday(&now, NULL);
+	elapsed_ms = (now.tv_sec - dongle->last_used_time.tv_sec) * 1000
+		+ (now.tv_usec - dongle->last_used_time.tv_usec) / 1000;
+	if (elapsed_ms >= cooldown_ms)
+		return (0);
+	return (cooldown_ms - elapsed_ms);
+}
+
+int	dongle_wait_access(t_dongle *dongle, t_context *ctx,
+	int coder_id, int cooldown_ms)
+{
+	t_job			top;
+	long			remaining;
+	struct timespec	ts;
+	struct timeval	now;
+
+	pthread_mutex_lock(&dongle->sched_mutex);
+	while (!ctx->simulation_over)
 	{
-		if (scheduler_peek_job(&context->scheduler_heap, &top)
-			&& top.coder_id == coder_id)
+		if (!scheduler_peek_job(&dongle->queue, &top)
+			|| top.coder_id != coder_id || dongle->held)
 		{
-			scheduler_pop_job(&context->scheduler_heap, &top);
-			pthread_cond_broadcast(&context->scheduler_cond);
-			pthread_mutex_unlock(&context->scheduler_mutex);
+			pthread_cond_wait(&dongle->sched_cond, &dongle->sched_mutex);
+			continue ;
+		}
+		remaining = cooldown_remaining(dongle, cooldown_ms);
+		if (remaining <= 0)
+		{
+			scheduler_pop_job(&dongle->queue, &top);
+			dongle->held = 1;
+			pthread_mutex_unlock(&dongle->sched_mutex);
 			return (1);
 		}
-		pthread_cond_wait(&context->scheduler_cond,
-			&context->scheduler_mutex);
+		gettimeofday(&now, NULL);
+		ts.tv_sec = now.tv_sec + remaining / 1000;
+		ts.tv_nsec = (long)now.tv_usec * 1000 + (remaining % 1000) * 1000000;
+		if (ts.tv_nsec >= 1000000000)
+		{
+			ts.tv_sec++;
+			ts.tv_nsec -= 1000000000;
+		}
+		pthread_cond_timedwait(&dongle->sched_cond, &dongle->sched_mutex, &ts);
 	}
-	pthread_mutex_unlock(&context->scheduler_mutex);
+	pthread_mutex_unlock(&dongle->sched_mutex);
 	return (0);
+}
+
+void	dongle_release_access(t_dongle *dongle)
+{
+	pthread_mutex_lock(&dongle->sched_mutex);
+	dongle->held = 0;
+	gettimeofday(&dongle->last_used_time, NULL);
+	pthread_cond_broadcast(&dongle->sched_cond);
+	pthread_mutex_unlock(&dongle->sched_mutex);
 }

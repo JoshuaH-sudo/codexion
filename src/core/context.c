@@ -19,31 +19,40 @@ static void	destroy_dongles(t_context *context, int count)
 	i = 0;
 	while (i < count)
 	{
-		pthread_mutex_destroy(&context->dongles[i].mutex);
-		pthread_cond_destroy(&context->dongles[i].cooldown_cond);
+		pthread_mutex_destroy(&context->dongles[i].sched_mutex);
+		pthread_cond_destroy(&context->dongles[i].sched_cond);
+		scheduler_destroy(&context->dongles[i].queue);
 		i++;
 	}
 }
 
 static int	init_dongles(t_context *context)
 {
-	int	i;
+	t_policy	policy;
+	int			i;
 
+	policy = context_get_policy(context);
 	i = 0;
 	while (i < context->args.number_of_coders)
 	{
 		context->dongles[i].id = i + 1;
+		context->dongles[i].held = 0;
+		context->dongles[i].next_seq_no = 0;
 		context->dongles[i].last_used_time.tv_sec = 0;
 		context->dongles[i].last_used_time.tv_usec = 0;
-		if (pthread_cond_init(&context->dongles[i].cooldown_cond, NULL) != 0)
+		if (!scheduler_init(&context->dongles[i].queue,
+				context->args.number_of_coders, policy))
+			return (destroy_dongles(context, i), 0);
+		if (pthread_mutex_init(&context->dongles[i].sched_mutex, NULL) != 0)
 		{
-			destroy_dongles(context, i);
-			return (0);
+			scheduler_destroy(&context->dongles[i].queue);
+			return (destroy_dongles(context, i), 0);
 		}
-		if (pthread_mutex_init(&context->dongles[i].mutex, NULL) != 0)
+		if (pthread_cond_init(&context->dongles[i].sched_cond, NULL) != 0)
 		{
-			destroy_dongles(context, i);
-			return (0);
+			pthread_mutex_destroy(&context->dongles[i].sched_mutex);
+			scheduler_destroy(&context->dongles[i].queue);
+			return (destroy_dongles(context, i), 0);
 		}
 		i++;
 	}
@@ -54,18 +63,11 @@ static int	init_state(t_context *context)
 {
 	context->monitor_thread = 0;
 	context->simulation_over = 0;
-	context->next_seq_no = 0;
 	if (pthread_mutex_init(&context->state_mutex, NULL) != 0)
-		return (0);
-	if (pthread_mutex_init(&context->scheduler_mutex, NULL) != 0)
-		return (0);
-	if (pthread_cond_init(&context->scheduler_cond, NULL) != 0)
 		return (0);
 	if (!init_dongles(context) || !init_log_mutex(context))
 	{
 		pthread_mutex_destroy(&context->state_mutex);
-		pthread_mutex_destroy(&context->scheduler_mutex);
-		pthread_cond_destroy(&context->scheduler_cond);
 		return (0);
 	}
 	return (1);
@@ -89,11 +91,6 @@ int	init_context(t_context *context, t_args *args)
 		free(context->dongles);
 		return (0);
 	}
-	if (!context_init_scheduler_heap(context))
-	{
-		destroy_context(context);
-		return (0);
-	}
 	gettimeofday(&context->start_time, NULL);
 	context_init_coders(context);
 	return (1);
@@ -103,10 +100,7 @@ void	destroy_context(t_context *context)
 {
 	pthread_mutex_destroy(&context->log_mutex);
 	pthread_mutex_destroy(&context->state_mutex);
-	pthread_mutex_destroy(&context->scheduler_mutex);
-	pthread_cond_destroy(&context->scheduler_cond);
 	destroy_dongles(context, context->args.number_of_coders);
-	scheduler_destroy(&context->scheduler_heap);
 	free(context->coders);
 	free(context->dongles);
 }
