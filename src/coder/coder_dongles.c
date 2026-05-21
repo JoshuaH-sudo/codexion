@@ -6,7 +6,7 @@
 /*   By: jhoban <jhoban@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/18 16:45:00 by jhoban            #+#    #+#             */
-/*   Updated: 2026/05/21 17:16:18 by jhoban           ###   ########.fr       */
+/*   Updated: 2026/05/21 17:39:19 by jhoban           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,8 @@ int	coder_lock_dongles(t_coder *coder, int first, int second)
 	t_context	*ctx;
 
 	ctx = coder->context;
-	if (first == second)
-	{
-		while (!coder_should_stop(coder))
-			usleep(1000);
+	if (coder_should_stop(coder))
 		return (0);
-	}
 	if (!lock_single_dongle(coder, first))
 		return (0);
 	if (coder_should_stop(coder))
